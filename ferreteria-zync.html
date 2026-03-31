@@ -303,6 +303,7 @@ tr:hover td{background:rgba(249,115,22,.04)}
       <div class="nav-item" onclick="showPage('pos',this)" data-page="pos"><span class="nav-icon">🛒</span><span class="nav-label">Punto de Venta</span></div>
       <div class="nav-item" onclick="showPage('inventario',this)" data-page="inventario"><span class="nav-icon">📦</span><span class="nav-label">Inventario</span><span class="nav-badge red" id="badge-stock" style="display:none">!</span></div>
       <div class="nav-item" onclick="showPage('historial',this)" data-page="historial"><span class="nav-icon">📋</span><span class="nav-label">Historial</span></div>
+      <div class="nav-item" onclick="showPage('devoluciones',this)" data-page="devoluciones"><span class="nav-icon">↩️</span><span class="nav-label">Devoluciones</span></div>
       <div class="nav-item" onclick="showPage('cotizaciones',this)" data-page="cotizaciones"><span class="nav-icon">📝</span><span class="nav-label">Cotizaciones</span><span class="nav-badge" id="badge-cot" style="display:none">0</span></div>
       <div class="nav-item" onclick="showPage('caja',this)" data-page="caja"><span class="nav-icon">🏧</span><span class="nav-label">Caja</span></div>
       <div class="nav-item" onclick="showPage('clientes',this)" data-page="clientes"><span class="nav-icon">👥</span><span class="nav-label">Clientes</span></div>
@@ -357,6 +358,10 @@ tr:hover td{background:rgba(249,115,22,.04)}
             <div id="metodo-top" style="font-size:24px;font-weight:900;color:var(--accent);margin-top:8px">—</div>
           </div>
         </div>
+        <div class="card mt-3">
+          <div class="card-title mb-3">🧾 Últimas Ventas</div>
+          <div id="dash-ultimas-ventas" style="font-size:13px"></div>
+        </div>
       </div>
 
       <!-- ══ POS ══ -->
@@ -371,6 +376,15 @@ tr:hover td{background:rgba(249,115,22,.04)}
         <div class="pos-layout">
           <div class="pos-products">
             <div class="cat-pills" id="cat-pills"></div>
+            <!-- Widget Balanza en POS -->
+            <div id="fz-scale-widget" style="display:none;background:rgba(249,115,22,.08);border:1.5px solid var(--accent,#f97316);border-radius:10px;padding:10px 14px;margin-bottom:10px;align-items:center;gap:12px;">
+              <span style="font-size:24px">⚖️</span>
+              <div style="flex:1">
+                <div style="font-size:10px;color:var(--text2);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Peso en balanza</div>
+                <div id="fz-scale-display" style="font-size:22px;font-weight:800;font-family:var(--mono);color:var(--accent,#f97316)">0.000 kg</div>
+              </div>
+              <div id="fz-scale-subtotal" style="font-size:16px;font-weight:800;font-family:var(--mono);color:var(--success,#16a34a)">$0.00</div>
+            </div>
             <div class="prod-grid" id="prod-grid"></div>
           </div>
           <div class="cart-panel">
@@ -396,6 +410,8 @@ tr:hover td{background:rgba(249,115,22,.04)}
                 <input type="number" id="cart-recibido" class="form-input" placeholder="Monto recibido $" oninput="calcVuelto()" style="font-size:13px;margin-bottom:6px">
                 <div class="total-row"><span style="color:var(--text2)">Vuelto</span><span id="cart-vuelto" style="color:var(--success);font-weight:700">$0.00</span></div>
               </div>
+              <div id="pausedCartsBar" style="display:none;margin-bottom:8px;border:1px solid var(--warn,#f59e0b);border-radius:8px;padding:8px;font-size:12px;background:rgba(245,158,11,.07);"></div>
+              <button class="btn btn-ghost btn-full" onclick="pausarVenta()" style="height:38px;margin-bottom:6px;font-weight:600;color:var(--warn,#f59e0b);border-color:var(--warn,#f59e0b)">⏸️ Pausar Venta</button>
               <button class="btn btn-primary btn-full" onclick="abrirCobro()" style="height:44px;font-size:15px;font-weight:700;margin-top:4px">💰 Cobrar</button>
             </div>
           </div>
@@ -408,6 +424,11 @@ tr:hover td{background:rgba(249,115,22,.04)}
           <div class="flex gap-2 flex-wrap">
             <input type="text" id="inv-search" class="form-input" placeholder="🔍 Buscar..." style="width:180px" oninput="renderInventario()">
             <select id="inv-cat" class="form-select" style="width:160px" onchange="renderInventario()"><option value="">Todas las categorías</option></select>
+            <select id="inv-stock-filter" class="form-select" style="width:140px" onchange="renderInventario()">
+              <option value="">Todo el stock</option>
+              <option value="bajo">⚠️ Stock Bajo</option>
+              <option value="agotado">🔴 Agotados</option>
+            </select>
             <button class="btn btn-primary btn-sm" onclick="abrirModalProducto(null)">+ Nuevo Producto</button>
             <button class="btn btn-ghost btn-sm" onclick="exportarCSV('inventario')">📤 CSV</button>
           </div>
@@ -440,6 +461,31 @@ tr:hover td{background:rgba(249,115,22,.04)}
         </table></div>
       </div>
 
+      <!-- ══ DEVOLUCIONES ══ -->
+      <div id="page-devoluciones" class="page">
+        <div class="section-title">↩️ Devoluciones</div>
+        <div class="grid-4 mb-4" id="dev-stats">
+          <div class="kpi-card"><div class="kpi-label">Total Devoluciones</div><div class="kpi-val" id="dev-kpi-total">0</div></div>
+          <div class="kpi-card"><div class="kpi-label">Monto Devuelto $</div><div class="kpi-val" id="dev-kpi-monto" style="color:var(--danger)">$0.00</div></div>
+          <div class="kpi-card"><div class="kpi-label">Este Mes</div><div class="kpi-val" id="dev-kpi-mes">0</div></div>
+          <div class="kpi-card"><div class="kpi-label">Ventas Afectadas</div><div class="kpi-val" id="dev-kpi-ventas">0</div></div>
+        </div>
+        <div class="card">
+          <div class="flex items-center justify-between mb-3">
+            <div class="card-title" style="margin-bottom:0">📋 Historial de Devoluciones</div>
+            <div class="flex gap-2">
+              <input type="date" id="dev-desde" class="form-input" style="width:150px" onchange="renderDevoluciones()">
+              <input type="date" id="dev-hasta" class="form-input" style="width:150px" onchange="renderDevoluciones()">
+              <button class="btn btn-ghost btn-sm" onclick="exportarCSV('devoluciones')">📤 CSV</button>
+            </div>
+          </div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>#Venta</th><th>Fecha</th><th>Productos</th><th>Motivo</th><th>Tipo</th><th>Monto $</th><th>Monto Bs</th></tr></thead>
+            <tbody id="dev-tbody"></tbody>
+          </table></div>
+        </div>
+      </div>
+
       <!-- ══ COTIZACIONES ══ -->
       <div id="page-cotizaciones" class="page">
         <div class="flex items-center justify-between mb-3">
@@ -458,8 +504,9 @@ tr:hover td{background:rgba(249,115,22,.04)}
           <div class="card" style="max-width:480px">
             <div class="card-title mb-3">📂 Abrir Turno de Caja</div>
             <div class="form-group"><label class="form-label">Responsable</label><input type="text" id="caja-responsable" class="form-input" placeholder="Nombre del cajero"></div>
-            <div class="grid-2"><div class="form-group"><label class="form-label">Monto Inicial $</label><input type="number" id="caja-inicial-usd" class="form-input" value="0" min="0" step="0.01"></div>
-            <div class="form-group"><label class="form-label">Monto Inicial Bs</label><input type="number" id="caja-inicial-bs" class="form-input" value="0" min="0" step="0.01"></div></div>
+            <div class="grid-2"><div class="form-group"><label class="form-label">💵 Efectivo Inicial $</label><input type="number" id="caja-inicial-usd" class="form-input" value="0" min="0" step="0.01" oninput="cajaSyncBsFZ()"></div>
+            <div class="form-group"><label class="form-label">🇻🇪 Efectivo Inicial Bs</label><input type="number" id="caja-inicial-bs" class="form-input" value="0" min="0" step="0.01" oninput="cajaSyncUsdFZ()"></div></div>
+            <div id="caja-equiv-info" style="font-size:12px;color:var(--text2);text-align:right;margin-bottom:12px;font-family:var(--mono)"></div>
             <button class="btn btn-success btn-full" onclick="abrirCaja()" style="height:44px;font-weight:700">✅ Abrir Caja</button>
           </div>
         </div>
@@ -476,6 +523,10 @@ tr:hover td{background:rgba(249,115,22,.04)}
               <div class="form-group"><label class="form-label">Contado en $ USD</label><input type="number" id="caja-contado-usd" class="form-input" value="0" oninput="calcDifCaja()"></div>
               <div class="form-group"><label class="form-label">Contado en Bs</label><input type="number" id="caja-contado-bs" class="form-input" value="0" oninput="calcDifCaja()"></div>
               <div id="caja-diferencia" class="alert alert-info">Diferencia: $0.00</div>
+              <div class="flex gap-2 mb-3">
+                <button class="btn btn-ghost btn-sm flex-1" onclick="abrirMovCajaFZ('entrada')">💵 + Entrada</button>
+                <button class="btn btn-ghost btn-sm flex-1" onclick="abrirMovCajaFZ('salida')">💸 − Salida</button>
+              </div>
               <button class="btn btn-danger btn-full mt-3" onclick="cerrarCaja()" style="height:44px;font-weight:700">🔒 Cerrar Caja e Imprimir</button>
             </div>
           </div>
@@ -637,9 +688,18 @@ tr:hover td{background:rgba(249,115,22,.04)}
 <div class="modal-body">
   <div class="grid-2"><div class="form-group"><label class="form-label">Nombre *</label><input type="text" id="mprod-nombre" class="form-input" placeholder="Nombre del producto"></div>
   <div class="form-group"><label class="form-label">Emoji</label><input type="text" id="mprod-emoji" class="form-input" placeholder="🔧" maxlength="2"></div></div>
-  <div class="form-group"><label class="form-label">Categoría *</label><select id="mprod-cat" class="form-select"></select></div>
+  <div class="form-group"><label class="form-label">Categoría *</label><select id="mprod-cat" class="form-select" onchange="autoEmojiCatFZ(this)"></select></div>
   <div class="grid-2"><div class="form-group"><label class="form-label">Precio $ *</label><input type="number" id="mprod-precio" class="form-input" min="0" step="0.01" placeholder="0.00"></div>
   <div class="form-group"><label class="form-label">Unidad</label><select id="mprod-unidad" class="form-select"><option>Unidad</option><option>Metro</option><option>Kg</option><option>Litro</option><option>Caja</option><option>Bolsa</option><option>Rollo</option><option>Par</option><option>Juego</option><option>Pieza</option><option>Galón</option></select></div></div>
+  <div class="grid-2"><div class="form-group"><label class="form-label">Costo $ (opcional)</label><input type="number" id="mprod-costo" class="form-input" min="0" step="0.01" placeholder="0.00" oninput="calcGananciaFZ()"></div>
+  <div class="form-group"><label class="form-label">Ganancia %</label>
+    <div style="display:flex;gap:4px;align-items:center">
+      <input type="number" id="mprod-ganancia" class="form-input" min="0" step="1" placeholder="0" oninput="calcPrecioFZ()" style="flex:1">
+      <button type="button" onclick="setGananciaFZ(20)" style="padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer;background:transparent;color:var(--text2)">20%</button>
+      <button type="button" onclick="setGananciaFZ(30)" style="padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer;background:transparent;color:var(--text2)">30%</button>
+      <button type="button" onclick="setGananciaFZ(40)" style="padding:4px 6px;border:1px solid var(--border);border-radius:6px;font-size:11px;cursor:pointer;background:transparent;color:var(--text2)">40%</button>
+    </div>
+  </div></div>
   <div class="grid-2"><div class="form-group"><label class="form-label">Stock *</label><input type="number" id="mprod-stock" class="form-input" min="0" value="0"></div>
   <div class="form-group"><label class="form-label">Stock Mínimo</label><input type="number" id="mprod-stockmin" class="form-input" min="0" value="5"></div></div>
   <div class="form-group"><label class="form-label">Código/Referencia</label><input type="text" id="mprod-codigo" class="form-input" placeholder="REF-001 (opcional)"></div>
@@ -1050,11 +1110,11 @@ function showPage(page,el){
   var pg=document.getElementById('page-'+page);if(pg)pg.classList.add('active');
   if(el)el.classList.add('active');
   var titles={dashboard:'📊 Dashboard',pos:'🛒 Punto de Venta',inventario:'📦 Inventario',
-    historial:'📋 Historial',cotizaciones:'📝 Cotizaciones',caja:'🏧 Caja',
+    historial:'📋 Historial',devoluciones:'↩️ Devoluciones',cotizaciones:'📝 Cotizaciones',caja:'🏧 Caja',
     clientes:'👥 Clientes',proveedores:'🚛 Proveedores',reportes:'📈 Reportes',configuracion:'⚙️ Configuración'};
   var tb=document.getElementById('topbarTitle');if(tb)tb.textContent=titles[page]||page;
   var renders={dashboard:renderDashboard,pos:renderPos,inventario:renderInventario,
-    historial:renderHistorial,cotizaciones:renderCotizaciones,caja:renderCaja,
+    historial:renderHistorial,devoluciones:renderDevoluciones,cotizaciones:renderCotizaciones,caja:renderCaja,
     clientes:renderClientes,proveedores:renderProveedores,reportes:renderReportes,configuracion:renderConfig};
   if(renders[page])renders[page]();
   var sb=document.getElementById('sidebar');if(sb)sb.classList.remove('mobile-open');
@@ -1180,6 +1240,26 @@ function renderDashboard(){
   var mc={};vh.forEach(function(x){mc[x.metodoLabel||x.metodo]=(mc[x.metodoLabel||x.metodo]||0)+1;});
   var tm=Object.entries(mc).sort(function(a,b){return b[1]-a[1];})[0];
   var mt=document.getElementById('metodo-top');if(mt)mt.textContent=tm?tm[0]:'—';
+  // Últimas ventas
+  var ulEl=document.getElementById('dash-ultimas-ventas');
+  if(ulEl){
+    var ultimas=(v||[]).slice().reverse().slice(0,8);
+    if(!ultimas.length){ulEl.innerHTML='<div style="text-align:center;padding:20px;color:var(--text2)">Sin ventas registradas</div>';}
+    else{
+      ulEl.innerHTML=ultimas.map(function(vv){
+        var hora=new Date(vv.ts||vv.fecha).toLocaleTimeString('es-VE',{hour:'2-digit',minute:'2-digit'});
+        var fecha=new Date(vv.ts||vv.fecha).toLocaleDateString('es-VE',{day:'2-digit',month:'short'});
+        return '<div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">'+
+          '<div style="flex:1;min-width:0">'+
+            '<div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+
+              (vv.items||[]).map(function(i){return i.nombre;}).slice(0,2).join(', ')+(vv.items&&vv.items.length>2?' +'+(vv.items.length-2)+'...':'')+'</div>'+
+            '<div style="font-size:10px;color:var(--text2)">'+fecha+' '+hora+' · '+(vv.metodo||'—')+'</div>'+
+          '</div>'+
+          '<div style="font-weight:700;font-size:13px;color:var(--success,#16a34a);font-family:var(--mono);white-space:nowrap">'+fmt$(vv.total||0)+'</div>'+
+        '</div>';
+      }).join('');
+    }
+  }
 }
 </script>
 <script>
@@ -1339,6 +1419,10 @@ function renderInventario(){
   var f=prods.filter(function(p){
     return(!_invCat||p.cat===_invCat)&&(!_invSearch||p.nombre.toLowerCase().includes(_invSearch.toLowerCase())||(p.codigo||'').toLowerCase().includes(_invSearch.toLowerCase()));
   });
+  var stockF=document.getElementById('inv-stock-filter');
+  var stockFV=stockF?stockF.value:'';
+  if(stockFV==='bajo')f=f.filter(function(p){return p.stock>0&&p.stock<=(p.stockMin||5);});
+  if(stockFV==='agotado')f=f.filter(function(p){return p.stock<=0;});
   // Populate cat filter
   var catSel=document.getElementById('inv-cat');
   if(catSel&&catSel.options.length<=1){catSel.innerHTML='<option value="">Todas las categorías</option>'+CATS.map(function(c){return'<option value="'+c.id+'">'+c.emoji+' '+c.nombre+'</option>';}).join('');}
@@ -1369,6 +1453,8 @@ function abrirModalProducto(id){
   document.getElementById('mprod-nombre').value=p?p.nombre:'';
   document.getElementById('mprod-emoji').value=p?(p.emoji||''):'';
   document.getElementById('mprod-precio').value=p?p.precio:'';
+  var costoEl=document.getElementById('mprod-costo');if(costoEl)costoEl.value=p?(p.costo||''):'';
+  var ganEl=document.getElementById('mprod-ganancia');if(ganEl)ganEl.value=p?(p.ganancia||''):'';
   document.getElementById('mprod-stock').value=p?p.stock:0;
   document.getElementById('mprod-stockmin').value=p?p.stockMin:5;
   document.getElementById('mprod-codigo').value=p?(p.codigo||''):'';
@@ -1387,8 +1473,11 @@ function guardarProducto(){
   if(!precio||precio<0){showToast('Precio inválido','warn');return;}
   var id=document.getElementById('mprod-id').value;
   var prods=DB.get('productos')||[];
+  var costoVal=parseFloat((document.getElementById('mprod-costo')||{}).value)||0;
+  var gananciaVal=parseFloat((document.getElementById('mprod-ganancia')||{}).value)||0;
   var prod={id:id||uid(),nombre:nombre,emoji:document.getElementById('mprod-emoji').value||'📦',
     cat:document.getElementById('mprod-cat').value,precio:precio,
+    costo:costoVal||undefined,ganancia:gananciaVal||undefined,
     stock:parseInt(document.getElementById('mprod-stock').value)||0,
     stockMin:parseInt(document.getElementById('mprod-stockmin').value)||5,
     codigo:document.getElementById('mprod-codigo').value.trim(),
@@ -1431,6 +1520,10 @@ function exportarCSV(tipo){
     rows=[['Fecha','Productos','Total $','Método','Notas']];
     (DB.get('ventas')||[]).forEach(function(v){rows.push([fmtDateTime(v.ts),v.items.map(function(i){return i.nombre+' x'+i.qty;}).join('|'),v.total.toFixed(2),v.metodoLabel||v.metodo,v.notas||'']);});
     nombre='ventas-'+todayStr()+'.csv';
+  }else if(tipo==='devoluciones'){
+    rows=[['Fecha','Venta Origen','Productos','Total $','Motivo']];
+    (DB.get('devoluciones')||[]).forEach(function(d){rows.push([fmtDateTime(d.ts),d.ventaId||'',d.items.map(function(i){return i.nombre+' x'+i.qty;}).join('|'),(d.total||0).toFixed(2),d.motivo||'']);});
+    nombre='devoluciones-'+todayStr()+'.csv';
   }else{
     rows=[['Nombre','Categoría','Precio $','Stock','Stock Mín','Unidad']];
     (DB.get('productos')||[]).forEach(function(p){var cat=CATS.find(function(c){return c.id===p.cat;});rows.push([p.nombre,cat?cat.nombre:p.cat,p.precio,p.stock,p.stockMin,p.unidad||'']);});
@@ -1465,7 +1558,11 @@ function renderHistorial(){
       '<td style="font-family:var(--mono);font-weight:700;color:var(--accent)">'+fmt$(v.total)+'</td>'+
       '<td style="font-family:var(--mono);color:var(--warn);font-size:12px">'+fmtBs(v.total)+'</td>'+
       '<td>'+( v.metodoLabel||v.metodo)+'</td>'+
-      '<td><button class="btn btn-ghost btn-sm" onclick="verVenta(\''+v.id+'\')">🧾</button></td>'+
+      '<td style="white-space:nowrap">'+
+        '<button class="btn btn-ghost btn-sm" onclick="verVenta(\''+v.id+'\')" title="Ver recibo">🧾</button> '+
+        (v.devuelta?'<span style="font-size:10px;padding:2px 6px;background:rgba(239,68,68,.15);color:var(--danger);border-radius:8px;font-weight:700">DEV</span>':
+        '<button class="btn btn-sm" onclick="abrirDevolucion(\''+v.id+'\')" title="Procesar devolución" style="background:rgba(239,68,68,.1);color:var(--danger);border:1px solid rgba(239,68,68,.3);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer">↩️</button>')+
+      '</td>'+
       '</tr>';
   }).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">Sin ventas</td></tr>';
 }
@@ -1984,6 +2081,350 @@ function resetTodo(){
   if(!confirm('¿Estás completamente seguro? Esta acción no se puede deshacer.'))return;
   ['productos','ventas','cotizaciones','clientes','proveedores','config','pay_methods','caja_apertura','caja_cierres','licencias_generadas'].forEach(function(k){DB.remove(k);});
   showToast('Sistema reseteado','info');setTimeout(function(){location.reload();},1200);
+}
+</script>
+
+<script>
+// ═══════════════════════════════════════════════
+// DEVOLUCIONES
+// ═══════════════════════════════════════════════
+function renderDevoluciones(){
+  var devs=DB.get('devoluciones')||[];
+  var ventas=DB.get('ventas')||[];
+  var desde=(document.getElementById('dev-desde')||{}).value||'';
+  var hasta=(document.getElementById('dev-hasta')||{}).value||'';
+  var f=devs.filter(function(d){
+    if(desde&&d.fecha<desde)return false;
+    if(hasta&&d.fecha>hasta)return false;
+    return true;
+  }).slice().reverse();
+  var mes=new Date().toISOString().slice(0,7);
+  var kT=document.getElementById('dev-kpi-total');if(kT)kT.textContent=devs.length;
+  var kM=document.getElementById('dev-kpi-monto');if(kM)kM.textContent=fmt$(devs.reduce(function(s,d){return s+(d.monto||0);},0));
+  var kMe=document.getElementById('dev-kpi-mes');if(kMe)kMe.textContent=devs.filter(function(d){return(d.fecha||'').startsWith(mes);}).length;
+  var kV=document.getElementById('dev-kpi-ventas');if(kV)kV.textContent=ventas.filter(function(v){return v.devuelta;}).length;
+  var tbody=document.getElementById('dev-tbody');if(!tbody)return;
+  var cfg=getCfg();var tasa=cfg.tasa||40;
+  if(!f.length){
+    tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text2)">Sin devoluciones registradas</td></tr>';
+    return;
+  }
+  tbody.innerHTML=f.map(function(d){
+    var prods=(d.items||[]).map(function(i){return i.nombre;}).join(', ')||'—';
+    return '<tr>'+
+      '<td style="font-family:var(--mono);font-size:11px">#'+String(d.ventaId||'').slice(-5)+'</td>'+
+      '<td style="font-size:12px">'+fmtDate(d.ts)+'</td>'+
+      '<td style="font-size:12px;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+prods+'">'+prods+'</td>'+
+      '<td style="font-size:12px">'+(d.motivo||'—')+'</td>'+
+      '<td><span style="padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700;background:'+(d.tipo==='total'?'rgba(239,68,68,.15)':'rgba(245,158,11,.15)')+';color:'+(d.tipo==='total'?'var(--danger)':'var(--warn)')+'">'+(d.tipo==='total'?'Total':'Parcial')+'</span></td>'+
+      '<td style="color:var(--danger);font-weight:700;font-family:var(--mono)">-'+fmt$(d.monto||0)+'</td>'+
+      '<td style="color:var(--warn);font-family:var(--mono)">-Bs '+((d.monto||0)*tasa).toFixed(2)+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+function abrirDevolucion(ventaId){
+  var ventas=DB.get('ventas')||[];
+  var v=ventas.find(function(x){return x.id===ventaId;});
+  if(!v){showToast('Venta no encontrada','warn');return;}
+  if(v.devuelta){showToast('Esta venta ya fue devuelta completamente','warn');return;}
+  var viejo=document.getElementById('modalDevolucionFZ');if(viejo)viejo.remove();
+  var items=(v.items||[]).map(function(it,i){
+    return '<label style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer">'+
+      '<input type="checkbox" value="'+i+'" style="width:16px;height:16px" checked>'+
+      '<span style="flex:1;font-size:13px">'+(it.nombre||'—')+'</span>'+
+      '<span style="font-family:var(--mono);font-size:12px;color:var(--accent)">'+fmt$(it.subtotal||0)+'</span>'+
+    '</label>';
+  }).join('');
+  var m=document.createElement('div');
+  m.id='modalDevolucionFZ';
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
+  m.innerHTML='<div style="background:var(--card,#fff);border:2px solid var(--danger,#ef4444);border-radius:16px;padding:24px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-sizing:border-box">'+
+    '<div style="font-size:16px;font-weight:800;color:var(--danger,#ef4444);margin-bottom:4px">↩️ Devolución de Venta</div>'+
+    '<div style="font-size:12px;color:var(--text2);margin-bottom:16px">Venta #'+String(ventaId).slice(-5)+' · '+fmt$(v.total||0)+'</div>'+
+    '<div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">Ítems a devolver:</div>'+
+    '<div id="fz-dev-items">'+items+'</div>'+
+    '<div style="margin:14px 0"><label style="font-size:11px;font-weight:700;color:var(--text2);display:block;margin-bottom:6px;text-transform:uppercase">Motivo *</label>'+
+    '<select id="fz-dev-motivo" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg2,#f4f4f4);color:var(--text);font-size:13px">'+
+      '<option value="defecto">Producto defectuoso</option>'+
+      '<option value="equivocado">Producto equivocado</option>'+
+      '<option value="danio">Daño en el transporte</option>'+
+      '<option value="cliente">Desistimiento del cliente</option>'+
+      '<option value="otro">Otro motivo</option>'+
+    '</select></div>'+
+    '<div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:10px 14px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">'+
+      '<span style="font-size:13px;color:var(--text2)">Monto a devolver:</span>'+
+      '<span id="fz-dev-preview" style="font-size:18px;font-weight:800;color:var(--danger,#ef4444);font-family:var(--mono)">'+fmt$(v.total||0)+'</span>'+
+    '</div>'+
+    '<div style="display:flex;gap:8px">'+
+      '<button onclick="document.getElementById(\'modalDevolucionFZ\').remove()" style="flex:1;padding:11px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--text2)">Cancelar</button>'+
+      '<button onclick="confirmarDevolucionFZ(\''+ventaId+'\')" style="flex:1;padding:11px;border-radius:8px;border:none;background:var(--danger,#ef4444);color:#fff;cursor:pointer;font-size:14px;font-weight:700">↩️ Confirmar</button>'+
+    '</div></div>';
+  document.body.appendChild(m);
+  document.querySelectorAll('#fz-dev-items input[type=checkbox]').forEach(function(cb){
+    cb.addEventListener('change',function(){
+      var checks=document.querySelectorAll('#fz-dev-items input[type=checkbox]:checked');
+      var total=Array.from(checks).reduce(function(s,c){var it=(v.items||[])[parseInt(c.value)];return s+(it?it.subtotal||0:0);},0);
+      var el=document.getElementById('fz-dev-preview');if(el)el.textContent=fmt$(total||v.total||0);
+    });
+  });
+}
+
+function confirmarDevolucionFZ(ventaId){
+  var ventas=DB.get('ventas')||[];
+  var idx=ventas.findIndex(function(x){return x.id===ventaId;});
+  if(idx===-1){showToast('Venta no encontrada','error');return;}
+  var v=ventas[idx];
+  var checks=document.querySelectorAll('#fz-dev-items input[type=checkbox]:checked');
+  var indices=Array.from(checks).map(function(c){return parseInt(c.value);});
+  if(!indices.length){showToast('Selecciona al menos un ítem','warn');return;}
+  var motivo=(document.getElementById('fz-dev-motivo')||{}).value||'otro';
+  var items=indices.map(function(i){return(v.items||[])[i];}).filter(Boolean);
+  var monto=items.reduce(function(s,it){return s+(it.subtotal||0);},0);
+  var esTotal=indices.length===(v.items||[]).length;
+  var prods=DB.get('productos')||[];
+  items.forEach(function(it){
+    var p=prods.find(function(x){return x.id===it.id;});
+    if(p)p.stock=(p.stock||0)+it.qty;
+  });
+  DB.set('productos',prods);
+  var devs=DB.get('devoluciones')||[];
+  devs.push({id:uid(),ts:Date.now(),ventaId:ventaId,fecha:new Date().toISOString().slice(0,10),items:items,motivo:motivo,monto:monto,tipo:esTotal?'total':'parcial'});
+  DB.set('devoluciones',devs);
+  if(esTotal)ventas[idx].devuelta=true;else ventas[idx].devueltaParcial=true;
+  ventas[idx].montoDevuelto=(ventas[idx].montoDevuelto||0)+monto;
+  DB.set('ventas',ventas);
+  var m=document.getElementById('modalDevolucionFZ');if(m)m.remove();
+  showToast('↩️ Devolución registrada: '+fmt$(monto)+' — Stock restaurado','success');
+  renderDevoluciones();
+}
+</script>
+
+<script>
+// ═══════════════════════════════════════════════
+// PAUSA DE VENTAS
+// ═══════════════════════════════════════════════
+var _pausedCarts=[];
+function pausarVenta(){
+  if(!_cart||!_cart.length){showToast('El carrito está vacío','warn');return;}
+  if(_pausedCarts.length>=5){showToast('Máximo 5 ventas pausadas','warn');return;}
+  var metodo=(document.getElementById('cart-metodo')||{}).value||'';
+  _pausedCarts.push({id:Date.now(),cart:_cart.slice(),metodo:metodo,hora:new Date().toLocaleTimeString('es-VE',{hour:'2-digit',minute:'2-digit'})});
+  _cart=[];recalcCart();renderCartItems();renderPosGrid();renderPausedCarts();
+  showToast('⏸️ Venta pausada — Atiende otro cliente','success');
+}
+function reanudarVenta(id){
+  var idx=_pausedCarts.findIndex(function(c){return c.id===id;});
+  if(idx===-1)return;
+  if(_cart&&_cart.length>0&&!confirm('¿Descartar el carrito actual y reanudar la venta pausada?'))return;
+  var p=_pausedCarts.splice(idx,1)[0];
+  _cart=p.cart||[];
+  var sm=document.getElementById('cart-metodo');if(sm&&p.metodo)sm.value=p.metodo;
+  recalcCart();renderCartItems();renderPosGrid();renderPausedCarts();
+  showToast('▶️ Venta reanudada','success');
+}
+function descartarPausa(id){
+  _pausedCarts=_pausedCarts.filter(function(c){return c.id!==id;});
+  renderPausedCarts();showToast('🗑️ Venta descartada','warn');
+}
+function renderPausedCarts(){
+  var bar=document.getElementById('pausedCartsBar');if(!bar)return;
+  if(!_pausedCarts.length){bar.style.display='none';return;}
+  bar.style.display='block';
+  bar.innerHTML='<div style="font-size:10px;color:var(--warn,#f59e0b);font-weight:700;margin-bottom:6px">⏸️ VENTAS EN PAUSA:</div>'+
+    _pausedCarts.map(function(c){
+      var tot=c.cart.reduce(function(s,i){return s+(i.subtotal||0);},0);
+      return '<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;background:rgba(0,0,0,.05);margin-bottom:3px">'+
+        '<span style="flex:1;font-size:11px">'+c.hora+' · '+c.cart.length+' prod · <strong style="color:var(--accent)">'+fmt$(tot)+'</strong></span>'+
+        '<button onclick="reanudarVenta('+c.id+')" style="background:var(--success,#16a34a);color:#fff;border:none;border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;cursor:pointer">▶️</button>'+
+        '<button onclick="descartarPausa('+c.id+')" style="background:var(--danger,#ef4444);color:#fff;border:none;border-radius:5px;padding:2px 6px;font-size:11px;cursor:pointer">✕</button>'+
+      '</div>';
+    }).join('');
+}
+</script>
+
+<script>
+// ═══════════════════════════════════════════════
+// CAJA — SYNC Bs/$ + MOVIMIENTOS MANUALES
+// ═══════════════════════════════════════════════
+function cajaSyncBsFZ(){
+  var cfg=getCfg();var tasa=cfg.tasa||40;
+  var usd=parseFloat((document.getElementById('caja-inicial-usd')||{}).value)||0;
+  var bsEl=document.getElementById('caja-inicial-bs');if(bsEl)bsEl.value=(usd*tasa).toFixed(0);
+  var info=document.getElementById('caja-equiv-info');
+  if(info)info.textContent='$'+usd.toFixed(2)+' × '+tasa+' = Bs '+(usd*tasa).toFixed(2);
+}
+function cajaSyncUsdFZ(){
+  var cfg=getCfg();var tasa=cfg.tasa||40;
+  var bs=parseFloat((document.getElementById('caja-inicial-bs')||{}).value)||0;
+  var usd=tasa>0?bs/tasa:0;
+  var usdEl=document.getElementById('caja-inicial-usd');if(usdEl)usdEl.value=usd.toFixed(2);
+  var info=document.getElementById('caja-equiv-info');
+  if(info)info.textContent='Bs '+bs.toFixed(2)+' / '+tasa+' = $'+usd.toFixed(2);
+}
+function abrirMovCajaFZ(tipo){
+  var ap=DB.get('caja_apertura');if(!ap){showToast('Abre la caja primero','warn');return;}
+  var titulo=tipo==='entrada'?'💵 Entrada de Dinero':'💸 Salida de Dinero';
+  var color=tipo==='entrada'?'var(--success,#16a34a)':'var(--danger,#ef4444)';
+  var viejo=document.getElementById('modalMovCajaFZ');if(viejo)viejo.remove();
+  var m=document.createElement('div');m.id='modalMovCajaFZ';
+  m.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
+  m.innerHTML='<div style="background:var(--card,#fff);border:2px solid '+color+';border-radius:14px;padding:24px;width:100%;max-width:380px;box-sizing:border-box">'+
+    '<div style="font-size:15px;font-weight:800;color:'+color+';margin-bottom:16px">'+titulo+'</div>'+
+    '<div style="margin-bottom:12px"><label style="font-size:11px;font-weight:700;color:var(--text2);display:block;margin-bottom:6px;text-transform:uppercase">Descripción</label>'+
+    '<input id="movcaja-desc" type="text" class="form-input" placeholder="Ej: Pago a proveedor / Cambio de caja" style="width:100%"></div>'+
+    '<div style="margin-bottom:16px"><label style="font-size:11px;font-weight:700;color:var(--text2);display:block;margin-bottom:6px;text-transform:uppercase">Monto $</label>'+
+    '<input id="movcaja-monto" type="number" class="form-input" min="0.01" step="0.01" placeholder="0.00" style="width:100%;font-size:18px;font-weight:700;text-align:right;font-family:var(--mono)"></div>'+
+    '<div style="display:flex;gap:8px">'+
+      '<button onclick="document.getElementById(\'modalMovCajaFZ\').remove()" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);background:transparent;cursor:pointer;color:var(--text2)">Cancelar</button>'+
+      '<button onclick="confirmarMovCajaFZ(\''+tipo+'\')" style="flex:1;padding:10px;border-radius:8px;border:none;background:'+color+';color:#fff;cursor:pointer;font-weight:700">✅ Confirmar</button>'+
+    '</div></div>';
+  document.body.appendChild(m);
+  setTimeout(function(){var f=document.getElementById('movcaja-desc');if(f)f.focus();},100);
+}
+function confirmarMovCajaFZ(tipo){
+  var desc=(document.getElementById('movcaja-desc')||{}).value.trim()||tipo;
+  var monto=parseFloat((document.getElementById('movcaja-monto')||{}).value)||0;
+  if(monto<=0){showToast('Ingresa un monto válido','warn');return;}
+  var movs=DB.get('caja_movimientos')||[];
+  movs.push({id:uid(),ts:Date.now(),tipo:tipo,desc:desc,monto:monto});
+  DB.set('caja_movimientos',movs);
+  var m=document.getElementById('modalMovCajaFZ');if(m)m.remove();
+  showToast((tipo==='entrada'?'💵 Entrada':'💸 Salida')+' registrada: '+fmt$(monto),'success');
+  renderCaja();
+}
+</script>
+
+<script>
+// ═══════════════════════════════════════════════
+// HARDWARE — BALANZA CONTINUA + ESCPOS + GAVETA
+// ═══════════════════════════════════════════════
+var _FZ_HW={balanza:{port:null,reader:null,peso:0},gaveta:{port:null},impresora:{port:null}};
+var _prodBalanzaActivo=null;
+
+function conectarBalanza(){
+  if(!navigator.serial){showToast('Web Serial requiere Chrome en HTTPS','warn');return;}
+  navigator.serial.requestPort()
+    .then(function(port){
+      return port.open({baudRate:9600,dataBits:8,stopBits:1,parity:'none'}).then(function(){
+        _FZ_HW.balanza.port=port;
+        var el=document.getElementById('hw-st-balanza');
+        if(el){el.textContent='✅ Conectada';}
+        var sw=document.getElementById('fz-scale-widget');if(sw)sw.style.display='flex';
+        showToast('⚖️ Balanza conectada','success');
+        _leerBalanzaContinuoFZ(port);
+      });
+    }).catch(function(){showToast('No se pudo conectar la balanza','warn');});
+}
+
+async function _leerBalanzaContinuoFZ(port){
+  var reader=port.readable.getReader();
+  _FZ_HW.balanza.reader=reader;var buf='';
+  try{
+    while(true){
+      var res=await reader.read();if(res.done)break;
+      buf+=new TextDecoder().decode(res.value);
+      if(buf.includes('\n')||buf.includes('\r')){
+        var peso=_parsearPesoFZ(buf.trim());
+        if(peso!==null&&peso>=0){_FZ_HW.balanza.peso=peso;_actualizarDisplayBalanzaFZ(peso);}
+        buf='';
+      }
+    }
+  }catch(e){
+    var el=document.getElementById('hw-st-balanza');if(el)el.textContent='Desconectada';
+    var sw=document.getElementById('fz-scale-widget');if(sw)sw.style.display='none';
+  }finally{reader.releaseLock();}
+}
+
+function _parsearPesoFZ(linea){
+  var m=linea.match(/[+-]?(\d+\.?\d*)\s*(kg|KG|g|G)?/);
+  if(!m)return null;
+  var val=parseFloat(m[1]);if(isNaN(val))return null;
+  if(m[2]&&(m[2]==='g'||m[2]==='G')&&val>10)val=val/1000;
+  return parseFloat(val.toFixed(3));
+}
+
+function _actualizarDisplayBalanzaFZ(kg){
+  var el=document.getElementById('fz-scale-display');if(el)el.textContent=kg.toFixed(3)+' kg';
+  var sub=document.getElementById('fz-scale-subtotal');
+  if(!_prodBalanzaActivo||!sub)return;
+  var prod=(DB.get('productos')||[]).find(function(p){return p.id===_prodBalanzaActivo;});
+  if(prod)sub.textContent=fmt$(prod.precio*kg);
+}
+
+function agregarAlCarritoBalanza(prodId){
+  var kg=_FZ_HW.balanza.peso||0;
+  if(kg<=0){showToast('Coloca el producto en la balanza primero','warn');return;}
+  var prod=(DB.get('productos')||[]).find(function(p){return p.id===prodId;});
+  if(!prod)return;
+  _prodBalanzaActivo=prodId;
+  var subtotal=parseFloat((prod.precio*kg).toFixed(2));
+  _cart=(_cart||[]).filter(function(c){return c.id!==prodId;});
+  _cart.push({id:prod.id,nombre:(prod.emoji||'')+' '+prod.nombre+' ('+kg.toFixed(3)+' kg)',precio:prod.precio,qty:kg,subtotal:subtotal,esPorPeso:true});
+  recalcCart();renderCartItems();renderPosGrid();
+  showToast((prod.emoji||'⚖️')+' '+prod.nombre+': '+kg.toFixed(3)+' kg = '+fmt$(subtotal),'success');
+}
+
+async function desconectarBalanzaFZ(){
+  if(_FZ_HW.balanza.reader){try{await _FZ_HW.balanza.reader.cancel();}catch(e){}}
+  if(_FZ_HW.balanza.port){try{await _FZ_HW.balanza.port.close();}catch(e){}}
+  _FZ_HW.balanza={port:null,reader:null,peso:0};_prodBalanzaActivo=null;
+  var el=document.getElementById('hw-st-balanza');if(el)el.textContent='Desconectada';
+  var sw=document.getElementById('fz-scale-widget');if(sw)sw.style.display='none';
+  showToast('⚖️ Balanza desconectada','info');
+}
+
+async function _enviarESCPOSFZ(bytes){
+  var port=_FZ_HW.gaveta.port||_FZ_HW.impresora.port;if(!port)return;
+  try{var w=port.writable.getWriter();await w.write(new Uint8Array(bytes));w.releaseLock();}
+  catch(e){console.warn('ESCPOS err',e);}
+}
+
+async function abrirGavetaFZ(){
+  if(!_FZ_HW.gaveta.port){showToast('Conecta la gaveta primero','warn');return;}
+  await _enviarESCPOSFZ([0x1B,0x70,0x00,0x19,0xFA]);
+  showToast('💰 Gaveta abierta','success');
+}
+
+async function probarGavetaFZ(){
+  if(!_FZ_HW.gaveta.port){showToast('Conecta la gaveta primero','warn');return;}
+  await _enviarESCPOSFZ([0x1B,0x70,0x00,0x19,0xFA]);
+  showToast('💰 Prueba de gaveta enviada','success');
+}
+</script>
+
+<script>
+// ═══════════════════════════════════════════════
+// PRODUCTO — CALCULADORA COSTO/PRECIO/GANANCIA
+// ═══════════════════════════════════════════════
+function calcGananciaFZ(){
+  var costo=parseFloat((document.getElementById('mprod-costo')||{}).value)||0;
+  var precio=parseFloat((document.getElementById('mprod-precio')||{}).value)||0;
+  if(costo>0&&precio>0){
+    var el=document.getElementById('mprod-ganancia');
+    if(el)el.value=((precio-costo)/costo*100).toFixed(1);
+  }
+}
+function calcPrecioFZ(){
+  var costo=parseFloat((document.getElementById('mprod-costo')||{}).value)||0;
+  var gan=parseFloat((document.getElementById('mprod-ganancia')||{}).value)||0;
+  if(costo>0&&gan>=0){
+    var el=document.getElementById('mprod-precio');
+    if(el)el.value=(costo*(1+gan/100)).toFixed(2);
+  }
+}
+function setGananciaFZ(pct){
+  var el=document.getElementById('mprod-ganancia');if(el)el.value=pct;
+  calcPrecioFZ();
+}
+function autoEmojiCatFZ(sel){
+  var MAP={'Electricidad':'⚡','Plomería':'🚿','Pintura':'🎨','Herramientas Manuales':'🔧',
+    'Herramientas Eléctricas':'🔌','Tornillería y Fijaciones':'🔩','Construcción':'🏗️',
+    'Seguridad':'🔒','Jardinería':'🌱','Iluminación':'💡','Maderas':'🪵',
+    'Cerrajería':'🗝️','Adhesivos':'🩹','Tubería':'🔧','Otros':'📦'};
+  var cat=sel?sel.value:'';
+  var el=document.getElementById('mprod-emoji');
+  if(el&&!el.value&&MAP[cat])el.value=MAP[cat];
 }
 </script>
 </body>
