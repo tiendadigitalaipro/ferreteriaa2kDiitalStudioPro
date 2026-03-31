@@ -687,7 +687,35 @@ tr:hover td{background:rgba(249,115,22,.04)}
 <div class="modal"><div class="modal-header"><div class="modal-title" id="mprod-title">+ Nuevo Producto</div><button class="btn-close" onclick="closeModal('modalProducto')">✕</button></div>
 <div class="modal-body">
   <div class="grid-2"><div class="form-group"><label class="form-label">Nombre *</label><input type="text" id="mprod-nombre" class="form-input" placeholder="Nombre del producto"></div>
-  <div class="form-group"><label class="form-label">Emoji</label><input type="text" id="mprod-emoji" class="form-input" placeholder="🔧" maxlength="2"></div></div>
+  <div class="form-group"><label class="form-label">Emoji</label>
+    <input type="text" id="mprod-emoji" class="form-input" placeholder="🔧" maxlength="4" style="width:70px;font-size:22px;text-align:center" oninput="this.value=this.value.trim()">
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🔧'">🔧</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🔨'">🔨</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🪛'">🪛</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🪚'">🪚</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🔩'">🔩</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🔌'">🔌</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='💡'">💡</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='⚡'">⚡</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🚰'">🚰</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🎨'">🎨</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🖌️'">🖌️</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🔐'">🔐</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🗝️'">🗝️</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🏗️'">🏗️</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🧰'">🧰</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🪣'">🪣</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🧹'">🧹</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🪟'">🪟</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🚪'">🚪</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🪵'">🪵</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='📏'">📏</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='📐'">📐</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='🌱'">🌱</button>
+      <button type="button" class="btn btn-ghost" style="font-size:18px;padding:4px 7px" onclick="document.getElementById('mprod-emoji').value='📦'">📦</button>
+    </div>
+  </div></div>
   <div class="form-group"><label class="form-label">Categoría *</label><select id="mprod-cat" class="form-select" onchange="autoEmojiCatFZ(this)"></select></div>
   <div class="grid-2"><div class="form-group"><label class="form-label">Precio $ *</label><input type="number" id="mprod-precio" class="form-input" min="0" step="0.01" placeholder="0.00"></div>
   <div class="form-group"><label class="form-label">Unidad</label><select id="mprod-unidad" class="form-select"><option>Unidad</option><option>Metro</option><option>Kg</option><option>Litro</option><option>Caja</option><option>Bolsa</option><option>Rollo</option><option>Par</option><option>Juego</option><option>Pieza</option><option>Galón</option></select></div></div>
@@ -2418,10 +2446,11 @@ function setGananciaFZ(pct){
   calcPrecioFZ();
 }
 function autoEmojiCatFZ(sel){
-  var MAP={'Electricidad':'⚡','Plomería':'🚿','Pintura':'🎨','Herramientas Manuales':'🔧',
-    'Herramientas Eléctricas':'🔌','Tornillería y Fijaciones':'🔩','Construcción':'🏗️',
-    'Seguridad':'🔒','Jardinería':'🌱','Iluminación':'💡','Maderas':'🪵',
-    'Cerrajería':'🗝️','Adhesivos':'🩹','Tubería':'🔧','Otros':'📦'};
+  var MAP={
+    'herr_manual':'🔧','electrico':'🔌','plomeria':'🚰','pintura':'🎨',
+    'tornilleria':'🔩','construccion':'🏗️','puertas':'🚪','cerrajeria':'🔐',
+    'herr_elec':'🧰','limpieza':'🧹'
+  };
   var cat=sel?sel.value:'';
   var el=document.getElementById('mprod-emoji');
   if(el&&!el.value&&MAP[cat])el.value=MAP[cat];
