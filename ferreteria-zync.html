@@ -1760,7 +1760,11 @@ function abrirCaja(){
 function calcDifCaja(){
   var ap=DB.get('caja_apertura');if(!ap)return;
   var ventas=DB.get('ventas')||[];
+  var devs=DB.get('devoluciones')||[];
   var totalEsp=ventas.filter(function(v){return v.ts>=ap.ts;}).reduce(function(s,v){return s+v.total;},0);
+  // Restar devoluciones del período actual
+  var totalDevuelto=devs.filter(function(d){return d.ts>=ap.ts;}).reduce(function(s,d){return s+(d.monto||0);},0);
+  totalEsp=totalEsp-totalDevuelto;
   var contado=parseFloat((document.getElementById('caja-contado-usd')||{}).value)||0;
   var dif=contado-totalEsp;
   var el=document.getElementById('caja-diferencia');
@@ -1769,8 +1773,10 @@ function calcDifCaja(){
 function cerrarCaja(){
   var ap=DB.get('caja_apertura');if(!ap)return;
   var ventas=DB.get('ventas')||[];
+  var devs=DB.get('devoluciones')||[];
   var vt=ventas.filter(function(v){return v.ts>=ap.ts;});
-  var totalEsp=vt.reduce(function(s,v){return s+v.total;},0);
+  var totalDevuelto=devs.filter(function(d){return d.ts>=ap.ts;}).reduce(function(s,d){return s+(d.monto||0);},0);
+  var totalEsp=vt.reduce(function(s,v){return s+v.total;},0)-totalDevuelto;
   var contado=parseFloat((document.getElementById('caja-contado-usd')||{}).value)||0;
   if(!confirm('¿Cerrar caja?\nVentas: '+fmt$(totalEsp)+' ('+vt.length+' transacciones)\nContado: '+fmt$(contado)))return;
   var cierre={ts:Date.now(),apertura:ap.ts,responsable:ap.responsable,totalVentas:totalEsp,contado:contado,numVentas:vt.length,fondoInicial:ap.fondoUsd};
@@ -2222,8 +2228,12 @@ function confirmarDevolucionFZ(ventaId){
   if(esTotal)ventas[idx].devuelta=true;else ventas[idx].devueltaParcial=true;
   ventas[idx].montoDevuelto=(ventas[idx].montoDevuelto||0)+monto;
   DB.set('ventas',ventas);
+  // Registrar movimiento en caja para reflejar la devolución
+  var movs=DB.get('caja_movimientos')||[];
+  movs.push({id:uid(),ts:Date.now(),tipo:'devolucion',monto:-monto,ventaId:ventaId,motivo:motivo,detalle:'Devolución venta '+ventaId});
+  DB.set('caja_movimientos',movs);
   var m=document.getElementById('modalDevolucionFZ');if(m)m.remove();
-  showToast('↩️ Devolución registrada: '+fmt$(monto)+' — Stock restaurado','success');
+  showToast('↩️ Devolución registrada: '+fmt$(monto)+' — Stock restaurado y caja actualizada','success');
   renderDevoluciones();
 }
 </script>
