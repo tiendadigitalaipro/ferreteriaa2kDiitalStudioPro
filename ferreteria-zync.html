@@ -1427,7 +1427,7 @@ function imprimirRecibo(venta){
   var cfg=getCfg();
   var html='<div style="text-align:center;margin-bottom:12px"><strong style="font-size:14px">'+cfg.nombre+'</strong><br>'+(cfg.tel?cfg.tel+'<br>':'')+(cfg.dir?cfg.dir+'<br>':'')+(cfg.rif?'RIF: '+cfg.rif+'<br>':'')+'</div>'+
     '<hr><div style="text-align:center;margin:8px 0">COMPROBANTE DE VENTA</div>'+
-    '<div>Fecha: '+fmtDateTime(venta.ts)+'</div><div>Método: '+(venta.metodoLabel||venta.metodo)+'</div><hr>'+
+    '<div>Fecha: '+fmtDateTime(venta.ts)+'</div><div>Método: '+(venta.metodoLabel||venta.metodo)+'</div>'+(venta.mixto?(function(m){var pm1=PAY_METHODS.find(function(p){return p.id===m.m1;})||{label:m.m1};var pm2=PAY_METHODS.find(function(p){return p.id===m.m2;})||{label:m.m2};return(m.a1>0?'<div style="font-size:11px;color:#555">  ↳ '+pm1.label+': '+fmt$(m.a1)+'</div>':'')+(m.a2>0?'<div style="font-size:11px;color:#555">  ↳ '+pm2.label+': '+fmt$(m.a2)+'</div>':'');})(venta.mixto):'')+'<hr>'+
     venta.items.map(function(i){return'<div>'+i.nombre+'<span style="float:right">'+fmt$(i.precio*i.qty)+'</span><br><small>'+i.qty+' × '+fmt$(i.precio)+'</small></div>';}).join('')+
     '<hr><div><strong>TOTAL: '+fmt$(venta.total)+'</strong></div>'+
     '<div style="color:#666">'+fmtBs(venta.total)+' (Tasa: '+cfg.tasa+')</div>'+
@@ -1735,12 +1735,28 @@ function renderCaja(){
   if(ap){
     var ventas=DB.get('ventas')||[];
     var vt=ventas.filter(function(v){return v.ts>=ap.ts;});
-    var totalEsp=vt.reduce(function(s,v){return s+v.total;},0);
+    // Separar fiado: NO entra en caja física
+    var vtCobradas=vt.filter(function(v){return v.metodo!=='fiado';});
+    var vtFiado=vt.filter(function(v){return v.metodo==='fiado';});
+    var totalEsp=vtCobradas.reduce(function(s,v){return s+v.total;},0);
+    var totalFiado=vtFiado.reduce(function(s,v){return s+v.total;},0);
     var info=document.getElementById('caja-info-bar');
     if(info)info.innerHTML='🟢 Turno abierto desde <strong>'+fmtDateTime(ap.ts)+'</strong> · Cajero: <strong>'+ap.responsable+'</strong> · Fondo inicial: <strong>'+fmt$(ap.fondoUsd)+'</strong>';
-    var byM={};vt.forEach(function(v){byM[v.metodoLabel||v.metodo]=(byM[v.metodoLabel||v.metodo]||0)+v.total;});
+    // Desglosar mixto por sub-método real
+    var byM={};
+    vtCobradas.forEach(function(v){
+      if(v.metodo==='mixto'&&v.mixto){
+        var pm1=PAY_METHODS.find(function(p){return p.id===v.mixto.m1;})||{label:v.mixto.m1};
+        var pm2=PAY_METHODS.find(function(p){return p.id===v.mixto.m2;})||{label:v.mixto.m2};
+        if(v.mixto.a1>0)byM[pm1.label]=(byM[pm1.label]||0)+v.mixto.a1;
+        if(v.mixto.a2>0)byM[pm2.label]=(byM[pm2.label]||0)+v.mixto.a2;
+      } else {
+        byM[v.metodoLabel||v.metodo]=(byM[v.metodoLabel||v.metodo]||0)+v.total;
+      }
+    });
     var rm=document.getElementById('caja-resumen-metodos');
-    if(rm)rm.innerHTML=Object.entries(byM).map(function(e){return'<div class="total-row mb-1"><span>'+e[0]+'</span><span style="font-family:var(--mono)">'+fmt$(e[1])+'</span></div>';}).join('')||'<div style="color:var(--text3);font-size:13px">Sin ventas en este turno</div>';
+    var fiadoRow=totalFiado>0?'<div class="total-row mb-1" style="color:var(--warn);border-top:1px dashed var(--warn);margin-top:6px;padding-top:6px"><span>📋 Por Cobrar (Fiado)</span><span style="font-family:var(--mono)">'+fmt$(totalFiado)+' — NO en caja</span></div>':'';
+    if(rm)rm.innerHTML=(Object.entries(byM).map(function(e){return'<div class="total-row mb-1"><span>'+e[0]+'</span><span style="font-family:var(--mono)">'+fmt$(e[1])+'</span></div>';}).join('')||'<div style="color:var(--text3);font-size:13px">Sin ventas en este turno</div>')+fiadoRow;
     var te=document.getElementById('caja-total-esp');if(te)te.textContent=fmt$(totalEsp);
     calcDifCaja();
   }
@@ -1760,11 +1776,7 @@ function abrirCaja(){
 function calcDifCaja(){
   var ap=DB.get('caja_apertura');if(!ap)return;
   var ventas=DB.get('ventas')||[];
-  var devs=DB.get('devoluciones')||[];
-  var totalEsp=ventas.filter(function(v){return v.ts>=ap.ts;}).reduce(function(s,v){return s+v.total;},0);
-  // Restar devoluciones del período actual
-  var totalDevuelto=devs.filter(function(d){return d.ts>=ap.ts;}).reduce(function(s,d){return s+(d.monto||0);},0);
-  totalEsp=totalEsp-totalDevuelto;
+  var totalEsp=ventas.filter(function(v){return v.ts>=ap.ts&&v.metodo!=='fiado';}).reduce(function(s,v){return s+v.total;},0);
   var contado=parseFloat((document.getElementById('caja-contado-usd')||{}).value)||0;
   var dif=contado-totalEsp;
   var el=document.getElementById('caja-diferencia');
@@ -1773,10 +1785,8 @@ function calcDifCaja(){
 function cerrarCaja(){
   var ap=DB.get('caja_apertura');if(!ap)return;
   var ventas=DB.get('ventas')||[];
-  var devs=DB.get('devoluciones')||[];
   var vt=ventas.filter(function(v){return v.ts>=ap.ts;});
-  var totalDevuelto=devs.filter(function(d){return d.ts>=ap.ts;}).reduce(function(s,d){return s+(d.monto||0);},0);
-  var totalEsp=vt.reduce(function(s,v){return s+v.total;},0)-totalDevuelto;
+  var totalEsp=vt.filter(function(v){return v.metodo!=='fiado';}).reduce(function(s,v){return s+v.total;},0);
   var contado=parseFloat((document.getElementById('caja-contado-usd')||{}).value)||0;
   if(!confirm('¿Cerrar caja?\nVentas: '+fmt$(totalEsp)+' ('+vt.length+' transacciones)\nContado: '+fmt$(contado)))return;
   var cierre={ts:Date.now(),apertura:ap.ts,responsable:ap.responsable,totalVentas:totalEsp,contado:contado,numVentas:vt.length,fondoInicial:ap.fondoUsd};
@@ -2228,12 +2238,8 @@ function confirmarDevolucionFZ(ventaId){
   if(esTotal)ventas[idx].devuelta=true;else ventas[idx].devueltaParcial=true;
   ventas[idx].montoDevuelto=(ventas[idx].montoDevuelto||0)+monto;
   DB.set('ventas',ventas);
-  // Registrar movimiento en caja para reflejar la devolución
-  var movs=DB.get('caja_movimientos')||[];
-  movs.push({id:uid(),ts:Date.now(),tipo:'devolucion',monto:-monto,ventaId:ventaId,motivo:motivo,detalle:'Devolución venta '+ventaId});
-  DB.set('caja_movimientos',movs);
   var m=document.getElementById('modalDevolucionFZ');if(m)m.remove();
-  showToast('↩️ Devolución registrada: '+fmt$(monto)+' — Stock restaurado y caja actualizada','success');
+  showToast('↩️ Devolución registrada: '+fmt$(monto)+' — Stock restaurado','success');
   renderDevoluciones();
 }
 </script>
