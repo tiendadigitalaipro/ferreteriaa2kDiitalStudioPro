@@ -2568,6 +2568,463 @@ function cerrarModal(id) {
   const el = document.getElementById(id);
   if (el) el.remove();
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   SUPERPODERES BODEGA — Integración v3
+   10 funciones clonadas y adaptadas para Ferretería Pro
+   (metros · kilos · unidades · ferretería venezolana)
+═══════════════════════════════════════════════════════════════ */
+
+let INV_FILTRO_STOCK = 'todos';
+let _devVentaId = null;
+
+/* ──── 1. REGISTRAR MOVIMIENTO DE INVENTARIO ──── */
+function registrarMovInventario(prodId, prodNombre, tipo, qty, unidad, motivo, stockAntes, stockDespues) {
+  DB.push('ferr_movimientos', {
+    id: Date.now() + Math.random(),
+    prodId, prodNombre, tipo,
+    qty: Math.abs(qty),
+    unidad: unidad || 'und',
+    motivo: motivo || tipo,
+    stockAntes, stockDespues,
+    fecha: new Date().toISOString()
+  });
+}
+
+/* ──── 2. AJUSTE DE STOCK CON MOTIVO (Bodega → adaptado Ferretería) ──── */
+function adjustStock(id) {
+  const prods = DB.get('ferr_productos', []) || [];
+  const p = prods.find(x => x.id === id);
+  if (!p) return;
+  const html = `
+    <div id="modalAjuste" onclick="if(event.target===this)cerrarModal('modalAjuste')"
+         style="position:fixed;inset:0;background:rgba(2,7,18,0.88);z-index:10000;display:flex;align-items:center;justify-content:center;padding:16px">
+      <div style="background:var(--card);border:1px solid var(--border2);border-radius:var(--radius-lg);
+                  padding:24px;width:100%;max-width:380px;box-shadow:0 0 40px rgba(0,210,255,0.12)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+          <div style="font-family:var(--display);font-size:16px;font-weight:800">📦 Ajustar Stock</div>
+          <button onclick="cerrarModal('modalAjuste')" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
+        </div>
+        <div style="background:var(--bg2);border-radius:10px;padding:12px 14px;margin-bottom:16px;border-left:3px solid var(--neon)">
+          <div style="font-weight:800;color:var(--neon);font-size:13px">${p.nombre}</div>
+          <div style="color:var(--text3);font-size:12px;margin-top:3px">Stock actual: <b style="color:var(--text)">${p.stock} ${p.unidad}</b></div>
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:6px">Tipo de Movimiento</label>
+          <select id="ajTipo" class="inp" style="width:100%" onchange="_ajPreview(${p.stock})">
+            <option value="entrada">📥 Entrada — Compra / Ingreso</option>
+            <option value="salida">📤 Salida — Merma / Retiro</option>
+            <option value="ajuste">🔧 Ajuste Físico — Nuevo total</option>
+          </select>
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:6px">Motivo</label>
+          <select id="ajMotivo" class="inp" style="width:100%">
+            <option>Compra a proveedor</option>
+            <option>Merma / Daño</option>
+            <option>Robo / Pérdida</option>
+            <option>Inventario físico</option>
+            <option>Devolución de proveedor</option>
+            <option>Ajuste manual</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div style="margin-bottom:16px">
+          <label id="ajQtyLbl" style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:6px">Cantidad a ingresar</label>
+          <input type="number" id="ajQty" class="inp" style="width:100%;font-size:20px;font-weight:800;text-align:center"
+                 min="0" value="0" oninput="_ajPreview(${p.stock})">
+          <div id="ajPrev" style="text-align:center;margin-top:8px;font-size:13px;color:var(--text3)">
+            Nuevo stock: <b style="color:var(--neon)">${p.stock}</b> ${p.unidad}
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="cerrarModal('modalAjuste')">Cancelar</button>
+          <button class="btn btn-neon btn-sm" style="flex:2" onclick="confirmarAjusteStock(${id},${p.stock})">✅ Confirmar</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', html);
+  setTimeout(() => document.getElementById('ajQty')?.focus(), 100);
+}
+
+function _ajPreview(stockActual) {
+  const tipo = document.getElementById('ajTipo')?.value;
+  const qty  = parseInt(document.getElementById('ajQty')?.value) || 0;
+  const lbl  = document.getElementById('ajQtyLbl');
+  const prev = document.getElementById('ajPrev');
+  let nuevo = stockActual;
+  if (tipo === 'entrada') { nuevo = stockActual + qty; if (lbl) lbl.textContent = 'Cantidad a ingresar'; }
+  else if (tipo === 'salida') { nuevo = Math.max(0, stockActual - qty); if (lbl) lbl.textContent = 'Cantidad a retirar'; }
+  else { nuevo = qty; if (lbl) lbl.textContent = 'Nuevo stock total'; }
+  if (prev) prev.innerHTML = `Nuevo stock: <b style="color:${nuevo<=0?'var(--danger)':'var(--neon)'}">${nuevo}</b>`;
+}
+
+function confirmarAjusteStock(id, stockAntes) {
+  const prods  = DB.get('ferr_productos', []) || [];
+  const p      = prods.find(x => x.id === id);
+  if (!p) return;
+  const tipo   = document.getElementById('ajTipo')?.value;
+  const motivo = document.getElementById('ajMotivo')?.value;
+  const qty    = parseInt(document.getElementById('ajQty')?.value) || 0;
+  let nuevo = stockAntes;
+  if (tipo === 'entrada') nuevo = stockAntes + qty;
+  else if (tipo === 'salida') { if (qty > stockAntes) { toast(`Stock insuficiente (${stockAntes} disponible)`,'err'); return; } nuevo = stockAntes - qty; }
+  else nuevo = qty;
+  p.stock = nuevo;
+  DB.set('ferr_productos', prods);
+  registrarMovInventario(id, p.nombre, tipo, tipo==='ajuste'?Math.abs(nuevo-stockAntes):qty, p.unidad, motivo, stockAntes, nuevo);
+  cerrarModal('modalAjuste');
+  toast(`Stock actualizado: ${p.nombre} → ${nuevo} ${p.unidad}`, 'ok');
+  updateBadges();
+  if (document.getElementById('v-inventario')?.classList.contains('active')) renderInventario();
+}
+
+/* ──── 3. FILTRO DE ESTADO + INVENTARIO MEJORADO ──── */
+function renderInventario() {
+  const lowStock = getProdsLowStock();
+  const prods    = DB.get('ferr_productos', []) || [];
+  const sinStock = prods.filter(p => p.stock <= 0).length;
+  document.getElementById('v-inventario').innerHTML = `
+    <div class="page-hdr">
+      <div>
+        <div class="page-hdr-title">📦 Gestión de Inventario</div>
+        <div class="page-hdr-sub">${prods.length} productos · ${lowStock.length} críticos · ${sinStock} sin stock</div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="verTodosMovimientos()"><i class="fas fa-history"></i> Movimientos</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportarMovimientos()"><i class="fas fa-file-csv"></i> CSV</button>
+        <button class="btn btn-ghost btn-sm" onclick="abrirMovimientoManual()"><i class="fas fa-arrows-up-down"></i> Mov. Manual</button>
+        <button class="btn btn-neon btn-sm" onclick="abrirModalProducto(null)"><i class="fas fa-plus"></i> Nuevo Producto</button>
+      </div>
+    </div>
+    ${lowStock.length > 0 ? `
+    <div style="background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.22);border-radius:12px;
+                padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">⚠️</span>
+        <div>
+          <div style="font-weight:800;color:var(--danger);font-size:13px">${lowStock.length} producto(s) con stock crítico o agotado</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${lowStock.map(p=>p.nombre).slice(0,4).join(' · ')}${lowStock.length>4?' · …':''}</div>
+        </div>
+      </div>
+      <button class="btn btn-sm" style="background:rgba(255,71,87,0.12);color:var(--danger);border:1px solid rgba(255,71,87,0.3)"
+              onclick="INV_FILTRO_STOCK='critico';renderInvTabla()">Ver críticos</button>
+    </div>` : ''}
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <div class="search-bar" style="flex:1;min-width:180px">
+        <i class="fas fa-magnifying-glass"></i>
+        <input id="invBusq" placeholder="Buscar nombre, código…" oninput="INV_BUSQ=this.value;renderInvTabla()" autocomplete="off">
+      </div>
+      <select class="inp" style="width:auto;min-width:150px" onchange="INV_FILTRO_CAT=this.value;renderInvTabla()">
+        <option value="todos">Todas las categorías</option>
+        ${Object.entries(CATEGORIAS||{}).map(([k,v])=>`<option value="${k}">${v.emoji} ${v.label}</option>`).join('')}
+      </select>
+      <select class="inp" style="width:auto;min-width:130px" onchange="INV_FILTRO_STOCK=this.value;renderInvTabla()">
+        <option value="todos">Todos los estados</option>
+        <option value="critico">⛔ Crítico</option>
+        <option value="bajo">⚠️ Stock Bajo</option>
+        <option value="normal">✅ Normal</option>
+        <option value="sin">🚫 Sin Stock</option>
+      </select>
+    </div>
+    <div class="card"><div class="table-wrap" id="invTablaWrap"></div></div>`;
+  renderInvTabla();
+}
+
+function renderInvTabla() {
+  let prods = DB.get('ferr_productos', []) || [];
+  if (INV_FILTRO_CAT !== 'todos') prods = prods.filter(p => p.categoria === INV_FILTRO_CAT);
+  if (INV_BUSQ) prods = prods.filter(p =>
+    p.nombre.toLowerCase().includes(INV_BUSQ.toLowerCase()) ||
+    (p.codigo||'').toLowerCase().includes(INV_BUSQ.toLowerCase())
+  );
+  if (INV_FILTRO_STOCK === 'critico') prods = prods.filter(p => p.stock <= (p.stockMin||5));
+  else if (INV_FILTRO_STOCK === 'bajo') prods = prods.filter(p => p.stock > (p.stockMin||5) && p.stock <= (p.stockMin||5)*2);
+  else if (INV_FILTRO_STOCK === 'normal') prods = prods.filter(p => p.stock > (p.stockMin||5)*2);
+  else if (INV_FILTRO_STOCK === 'sin') prods = prods.filter(p => p.stock <= 0);
+
+  const wrap = document.getElementById('invTablaWrap');
+  if (!wrap) return;
+  if (!prods.length) { wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-title">Sin productos para este filtro</div></div>`; return; }
+
+  wrap.innerHTML = `<table><thead><tr>
+    <th>Código</th><th>Producto</th><th>Categoría</th><th>Unidad</th>
+    <th>P.Costo</th><th>P.Venta</th><th>Stock</th><th>Mín</th><th>Estado</th><th>Acciones</th>
+  </tr></thead><tbody>
+  ${prods.map(p => {
+    const est = p.stock <= 0 ? 'sin' : p.stock <= (p.stockMin||5) ? 'critico' : p.stock <= (p.stockMin||5)*2 ? 'bajo' : 'ok';
+    const badge = est==='sin' ? `<span class="badge badge-danger">Sin Stock</span>`
+                : est==='critico' ? `<span class="badge badge-danger">Crítico</span>`
+                : est==='bajo' ? `<span class="badge" style="background:rgba(255,165,2,0.15);color:var(--warn)">Bajo</span>`
+                : `<span class="badge" style="background:rgba(16,212,142,0.12);color:var(--green)">Normal</span>`;
+    const cat = CATEGORIAS?.[p.categoria] || {emoji:'📦', label:p.categoria||'General'};
+    return `<tr>
+      <td class="mono" style="color:var(--text3);font-size:12px">${p.codigo||'—'}</td>
+      <td style="font-weight:700">${p.nombre}</td>
+      <td><span class="badge" style="background:rgba(0,210,255,0.07);color:var(--neon)">${cat.emoji} ${cat.label}</span></td>
+      <td class="mono" style="color:var(--text3)">${p.unidad}</td>
+      <td class="mono">${fUSD(p.precioCosto||0)}</td>
+      <td class="mono" style="color:var(--neon);font-weight:800">${fUSD(p.precioVenta||0)}</td>
+      <td class="mono" style="font-weight:800;color:${p.stock<=0?'var(--danger)':p.stock<=(p.stockMin||5)?'var(--warn)':'var(--text)'}">${p.stock}</td>
+      <td class="mono" style="color:var(--text3)">${p.stockMin||5}</td>
+      <td>${badge}</td>
+      <td><div style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-xs" title="Ajustar Stock" onclick="adjustStock(${p.id})"><i class="fas fa-sliders"></i></button>
+        <button class="btn btn-ghost btn-xs" title="Historial movimientos" onclick="verMovimientosProd(${p.id},'${p.nombre.replace(/'/g,"\\'")}')"><i class="fas fa-history"></i></button>
+        <button class="btn btn-ghost btn-xs" title="Editar" onclick="abrirModalProducto(${p.id})"><i class="fas fa-pen"></i></button>
+        <button class="btn btn-danger btn-xs" title="Eliminar" onclick="eliminarProducto(${p.id})"><i class="fas fa-trash"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('')}
+  </tbody></table>`;
+}
+
+/* ──── 4. MOVIMIENTOS POR PRODUCTO ──── */
+function verMovimientosProd(prodId, prodNombre) {
+  const movs = (DB.get('ferr_movimientos', []) || []).filter(m => m.prodId === prodId);
+  document.body.insertAdjacentHTML('beforeend', `
+    <div id="modalMovsProd" onclick="if(event.target===this)cerrarModal('modalMovsProd')"
+         style="position:fixed;inset:0;background:rgba(2,7,18,0.88);z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px">
+      <div style="background:var(--card);border:1px solid var(--border2);border-radius:var(--radius-lg);
+                  width:100%;max-width:640px;max-height:80vh;display:flex;flex-direction:column">
+        <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+          <div style="font-family:var(--display);font-size:14px;font-weight:800">📋 Movimientos: ${prodNombre}</div>
+          <button onclick="cerrarModal('modalMovsProd')" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
+        </div>
+        <div style="overflow-y:auto;padding:16px">
+          ${!movs.length ? `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Sin movimientos</div></div>` :
+          `<table style="width:100%;border-collapse:collapse;font-size:12px">
+            <thead><tr>${['Fecha','Tipo','Cantidad','Motivo','Stock'].map(h=>`<th style="padding:8px;text-align:left;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border)">${h}</th>`).join('')}</tr></thead>
+            <tbody>${movs.slice(0,60).map(m=>`<tr style="border-bottom:1px solid rgba(0,210,255,0.05)">
+              <td style="padding:9px 8px;color:var(--text3);white-space:nowrap">${new Date(m.fecha).toLocaleString('es-VE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+              <td style="padding:9px 8px">${m.tipo==='entrada'?'<span style="color:var(--green);font-weight:700">↑ Entrada</span>':m.tipo==='venta'?'<span style="color:var(--gold);font-weight:700">🛒 Venta</span>':m.tipo==='devolucion'?'<span style="color:var(--purple);font-weight:700">↩ Dev.</span>':m.tipo==='salida'?'<span style="color:var(--danger);font-weight:700">↓ Salida</span>':'<span style="color:var(--neon);font-weight:700">⟳ Ajuste</span>'}</td>
+              <td style="padding:9px 8px;font-family:var(--mono);font-weight:700">${m.qty} ${m.unidad||''}</td>
+              <td style="padding:9px 8px;color:var(--text3)">${m.motivo||m.nota||'—'}</td>
+              <td style="padding:9px 8px;font-family:var(--mono)">${m.stockAntes??'?'} → <b style="color:var(--neon)">${m.stockDespues??'?'}</b></td>
+            </tr>`).join('')}</tbody>
+          </table>`}
+        </div>
+      </div>
+    </div>`);
+}
+
+/* ──── 5. REPORTE COMPLETO DE MOVIMIENTOS ──── */
+function verTodosMovimientos() {
+  const movs = DB.get('ferr_movimientos', []) || [];
+  document.body.insertAdjacentHTML('beforeend', `
+    <div id="modalTodasMovs" onclick="if(event.target===this)cerrarModal('modalTodasMovs')"
+         style="position:fixed;inset:0;background:rgba(2,7,18,0.88);z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px">
+      <div style="background:var(--card);border:1px solid var(--border2);border-radius:var(--radius-lg);
+                  width:100%;max-width:900px;max-height:88vh;display:flex;flex-direction:column">
+        <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+          <div>
+            <div style="font-family:var(--display);font-size:15px;font-weight:800">📊 Reporte de Movimientos de Inventario</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px">${movs.length} movimiento(s) total</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-ghost btn-sm" onclick="exportarMovimientos()"><i class="fas fa-file-csv"></i> Exportar CSV</button>
+            <button class="btn btn-ghost btn-sm" onclick="compartirCierreWA()"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+            <button onclick="cerrarModal('modalTodasMovs')" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
+          </div>
+        </div>
+        <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap">
+          <select id="mfTipo" class="inp" style="width:auto" onchange="_filtMovs()">
+            <option value="">Todos los tipos</option>
+            <option value="entrada">📥 Entradas</option>
+            <option value="salida">📤 Salidas</option>
+            <option value="ajuste">🔧 Ajustes</option>
+            <option value="venta">🛒 Ventas</option>
+            <option value="devolucion">↩️ Devoluciones</option>
+          </select>
+          <input type="date" id="mfFecha" class="inp" style="width:auto" onchange="_filtMovs()">
+          <input type="text" id="mfBusq" class="inp" style="flex:1;min-width:140px" placeholder="Buscar producto…" oninput="_filtMovs()">
+        </div>
+        <div style="overflow-y:auto;padding:0 16px 16px" id="movTablaWrap">${_renderMovsTable(movs)}</div>
+      </div>
+    </div>`);
+}
+
+function _filtMovs() {
+  const tipo  = document.getElementById('mfTipo')?.value || '';
+  const fecha = document.getElementById('mfFecha')?.value || '';
+  const busq  = (document.getElementById('mfBusq')?.value || '').toLowerCase();
+  let movs = DB.get('ferr_movimientos', []) || [];
+  if (tipo)  movs = movs.filter(m => m.tipo === tipo);
+  if (fecha) movs = movs.filter(m => m.fecha.startsWith(fecha));
+  if (busq)  movs = movs.filter(m => (m.prodNombre||'').toLowerCase().includes(busq));
+  const w = document.getElementById('movTablaWrap');
+  if (w) w.innerHTML = _renderMovsTable(movs);
+}
+
+function _renderMovsTable(movs) {
+  if (!movs.length) return `<div class="empty-state" style="padding:40px"><div class="empty-icon">📋</div><div class="empty-title">Sin movimientos para este filtro</div></div>`;
+  const tipoEl = t => t==='entrada'?'<span style="color:var(--green);font-weight:700">↑ Entrada</span>'
+    :t==='venta'?'<span style="color:var(--gold);font-weight:700">🛒 Venta</span>'
+    :t==='devolucion'?'<span style="color:var(--purple);font-weight:700">↩ Dev.</span>'
+    :t==='salida'?'<span style="color:var(--danger);font-weight:700">↓ Salida</span>'
+    :'<span style="color:var(--neon);font-weight:700">⟳ Ajuste</span>';
+  return `<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:10px">
+    <thead><tr>${['Fecha','Producto','Tipo','Cant.','Motivo','Stock'].map(h=>`<th style="padding:10px 8px;text-align:left;color:var(--text3);font-size:10px;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);white-space:nowrap">${h}</th>`).join('')}</tr></thead>
+    <tbody>${movs.slice(0,300).map(m=>`<tr style="border-bottom:1px solid rgba(0,210,255,0.04)">
+      <td style="padding:9px 8px;color:var(--text3);white-space:nowrap">${new Date(m.fecha).toLocaleString('es-VE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+      <td style="padding:9px 8px;font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.prodNombre||'—'}</td>
+      <td style="padding:9px 8px">${tipoEl(m.tipo)}</td>
+      <td style="padding:9px 8px;font-family:var(--mono);font-weight:700">${m.qty} ${m.unidad||''}</td>
+      <td style="padding:9px 8px;color:var(--text3)">${m.motivo||m.nota||'—'}</td>
+      <td style="padding:9px 8px;font-family:var(--mono)">${m.stockAntes??'?'} → <b style="color:var(--neon)">${m.stockDespues??'?'}</b></td>
+    </tr>`).join('')}</tbody>
+  </table>`;
+}
+
+/* ──── 6. EXPORT CSV ──── */
+function _dlCSV(csv, fname) {
+  const blob = new Blob(['﻿' + csv], {type:'text/csv;charset=utf-8;'});
+  const a = Object.assign(document.createElement('a'), {href:URL.createObjectURL(blob), download:fname, style:'display:none'});
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 1500);
+}
+
+function exportarMovimientos() {
+  const movs = DB.get('ferr_movimientos', []) || [];
+  const csv  = ['Fecha,Producto,Tipo,Cantidad,Unidad,Motivo,Stock Antes,Stock Después']
+    .concat(movs.map(m=>[`"${new Date(m.fecha).toLocaleString('es-VE')}"`,`"${m.prodNombre||''}"`,m.tipo,m.qty,m.unidad||'und',`"${m.motivo||m.nota||''}"`,m.stockAntes??'',m.stockDespues??''].join(','))).join('\n');
+  _dlCSV(csv, `movimientos_ferreteria_${new Date().toISOString().split('T')[0]}.csv`);
+  toast('Movimientos exportados a CSV','ok');
+}
+
+function exportarHistorial() {
+  const ventas = DB.get('ferr_ventas', []) || [];
+  const csv = ['Fecha,ID,Productos,Método,Total USD,Total Bs,Cliente']
+    .concat(ventas.map(v=>[`"${new Date(v.fecha).toLocaleString('es-VE')}"`,v.id,`"${(v.items||[]).map(i=>i.nombre+'×'+i.qty).join('; ')}"`,v.metodo||'USD',(v.totalUSD||0).toFixed(2),(v.totalBs||0).toFixed(2),`"${v.clienteNombre||'—'}"`].join(','))).join('\n');
+  _dlCSV(csv, `ventas_ferreteria_${new Date().toISOString().split('T')[0]}.csv`);
+  toast('Historial de ventas exportado','ok');
+}
+
+/* ──── 7. DEVOLUCIONES (clonado de Bodega, adaptado) ──── */
+function abrirDevolucion(ventaId) {
+  const v = (DB.get('ferr_ventas', []) || []).find(x => x.id === ventaId);
+  if (!v) { toast('Venta no encontrada','err'); return; }
+  if (v.devuelta) { toast('Esta venta ya fue devuelta','warn'); return; }
+  _devVentaId = ventaId;
+  document.body.insertAdjacentHTML('beforeend', `
+    <div id="modalDev" onclick="if(event.target===this)cerrarModal('modalDev')"
+         style="position:fixed;inset:0;background:rgba(2,7,18,0.88);z-index:10001;display:flex;align-items:center;justify-content:center;padding:16px">
+      <div style="background:var(--card);border:1px solid var(--border2);border-radius:var(--radius-lg);
+                  width:100%;max-width:500px;max-height:80vh;display:flex;flex-direction:column">
+        <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+          <div style="font-family:var(--display);font-size:14px;font-weight:800">↩️ Devolución — Venta #${String(ventaId).slice(-5)}</div>
+          <button onclick="cerrarModal('modalDev')" style="background:none;border:none;color:var(--text3);font-size:18px;cursor:pointer">✕</button>
+        </div>
+        <div style="overflow-y:auto;padding:16px 20px">
+          <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Selecciona los ítems a devolver. El stock se reintegrará automáticamente:</div>
+          ${(v.items||[]).map(it=>`
+            <label style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--bg2);border-radius:10px;margin-bottom:8px;cursor:pointer">
+              <input type="checkbox" class="dev-chk" value="${it.productoId||it.id||0}" data-qty="${it.qty}" style="width:16px;height:16px;accent-color:var(--neon)">
+              <span style="flex:1;font-size:13px;font-weight:600">${it.nombre} × ${it.qty} ${it.unidad||''}</span>
+              <span style="color:var(--neon);font-weight:800">${fUSD(it.subtotal||it.precio*it.qty||0)}</span>
+            </label>`).join('')}
+          <div style="margin-top:14px">
+            <label style="font-size:11px;font-weight:700;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:6px">Motivo</label>
+            <select id="devMotivo" class="inp" style="width:100%">
+              <option>Producto defectuoso</option><option>Producto incorrecto</option>
+              <option>No era lo solicitado</option><option>Error de cobro</option><option>Otro</option>
+            </select>
+          </div>
+          <input type="text" id="devNotas" class="inp" style="width:100%;margin-top:10px" placeholder="Notas opcionales…">
+        </div>
+        <div style="padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="cerrarModal('modalDev')">Cancelar</button>
+          <button class="btn btn-danger btn-sm" style="flex:2" onclick="confirmarDevolucion()">↩️ Confirmar Devolución</button>
+        </div>
+      </div>
+    </div>`);
+}
+
+function confirmarDevolucion() {
+  if (!_devVentaId) return;
+  const ventas = DB.get('ferr_ventas', []) || [];
+  const v      = ventas.find(x => x.id === _devVentaId);
+  if (!v) return;
+  const checks = [...document.querySelectorAll('.dev-chk:checked')];
+  if (!checks.length) { toast('Selecciona al menos un producto','warn'); return; }
+  const motivo = document.getElementById('devMotivo')?.value || 'Devolución';
+  let montoTotal = 0;
+  const prods = DB.get('ferr_productos', []) || [];
+  checks.forEach(ch => {
+    const item = v.items?.find(it => (it.productoId||it.id) === parseInt(ch.value));
+    if (item) { montoTotal += item.subtotal || (item.precio * item.qty) || 0; }
+    const p = prods.find(x => x.id === parseInt(ch.value));
+    if (p) {
+      const antes = p.stock;
+      p.stock += parseInt(ch.dataset.qty);
+      registrarMovInventario(p.id, p.nombre, 'devolucion', parseInt(ch.dataset.qty), p.unidad, `Devolución venta #${String(_devVentaId).slice(-5)} — ${motivo}`, antes, p.stock);
+    }
+  });
+  DB.set('ferr_productos', prods);
+  v.devuelta = true;
+  v.montoDevuelto = parseFloat(montoTotal.toFixed(2));
+  v.motivoDev = motivo;
+  v.fechaDev  = new Date().toISOString();
+  DB.set('ferr_ventas', ventas);
+  cerrarModal('modalDev');
+  toast(`Devolución procesada — ${fUSD(montoTotal)} reintegrado al stock`, 'ok');
+  updateBadges();
+  _devVentaId = null;
+}
+
+/* ──── 8. COMPARTIR CIERRE DEL DÍA VÍA WHATSAPP ──── */
+function compartirCierreWA() {
+  const hoy    = new Date().toISOString().split('T')[0];
+  const ventas = (DB.get('ferr_ventas', []) || []).filter(v => v.fecha.startsWith(hoy) && !v.devuelta);
+  const cfg    = DB.get('ferr_config', {});
+  const tasa   = cfg.tasaBCV || 1;
+  const totalUSD = ventas.reduce((s,v)=>s+(v.totalUSD||0),0);
+  const totalBs  = ventas.reduce((s,v)=>s+(v.totalBs||(v.totalUSD||0)*tasa),0);
+  const metodos  = {};
+  ventas.forEach(v=>{ metodos[v.metodo]=(metodos[v.metodo]||0)+(v.totalUSD||0); });
+  const neg   = cfg.nombre || 'Ferretería Pro';
+  const fecha = new Date().toLocaleDateString('es-VE',{weekday:'long',day:'numeric',month:'long'});
+  let msg = `🔧 *${neg} — Cierre del Día*\n📅 ${fecha}\n\n`;
+  msg += `💵 *Total USD:* $${totalUSD.toFixed(2)}\n🪙 *Total Bs:* Bs ${totalBs.toFixed(2)}\n📊 *Transacciones:* ${ventas.length}\n`;
+  const low = getProdsLowStock();
+  if (Object.keys(metodos).length) { msg+=`\n*Desglose:*\n`; Object.entries(metodos).forEach(([m,t])=>{ msg+=`  • ${m}: $${t.toFixed(2)}\n`; }); }
+  if (low.length) msg += `\n⚠️ *Stock crítico:* ${low.map(p=>p.nombre).slice(0,5).join(', ')}`;
+  msg += `\n\n_Ferretería Pro · A2K Digital Studio_`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+/* ──── 9. HOOK: REGISTRAR MOVIMIENTOS EN VENTAS ──── */
+const _origProcVenta = procesarVenta;
+function procesarVenta() {
+  const snap  = CART.map(x=>({...x}));
+  const antes = Object.fromEntries((DB.get('ferr_productos',[])||[]).map(p=>[p.id,p.stock]));
+  _origProcVenta();
+  setTimeout(()=>{
+    const despues = Object.fromEntries((DB.get('ferr_productos',[])||[]).map(p=>[p.id,p.stock]));
+    snap.forEach(item => {
+      registrarMovInventario(item.id, item.nombre, 'venta', item.qty, item.unidad||'und', 'Venta POS', antes[item.id], despues[item.id]);
+    });
+  }, 300);
+}
+
+/* ──── 10. BOTÓN DEVOLUCIÓN EN HISTORIAL + BOTONES EXPORT ──── */
+// Override renderVentas para agregar botones de exportar + devolución
+const _origRenderVentas = renderVentas;
+function renderVentas() {
+  _origRenderVentas();
+  // Inyectar botones de acción en el header del historial si existe
+  setTimeout(() => {
+    const hdr = document.querySelector('#v-ventas .page-hdr');
+    if (hdr && !hdr.querySelector('.btn-export-ventas')) {
+      const btns = document.createElement('div');
+      btns.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap';
+      btns.innerHTML = `
+        <button class="btn btn-ghost btn-sm btn-export-ventas" onclick="exportarHistorial()"><i class="fas fa-file-csv"></i> Exportar CSV</button>
+        <button class="btn btn-ghost btn-sm" onclick="compartirCierreWA()"><i class="fab fa-whatsapp"></i> Cierre WA</button>`;
+      hdr.appendChild(btns);
+    }
+  }, 100);
+}
 </script>
 </body>
 </html>
