@@ -1,7 +1,2573 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8">
-<meta http-equiv="refresh" content="0;url=ferreteria-zync.html">
-<title>Ferretería Zync — A2K Digital Studio</title>
-</head><body>
-<script>window.location.href='ferreteria-zync.html';</script>
-</body></html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ferretería Pro · A2K Digital Studio</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════
+   FERRETERÍA PRO · A2K Digital Studio
+   Iron Lock v2 + Design System
+   Parte 1: CSS + Seguridad
+═══════════════════════════════════════════════════ */
+
+:root {
+  --bg:        #020712;
+  --bg2:       #080f1e;
+  --bg3:       #0d1528;
+  --card:      #0f1a2e;
+  --card2:     #162035;
+  --border:    rgba(0, 210, 255, 0.10);
+  --border2:   rgba(0, 210, 255, 0.25);
+  --text:      #e8f0fe;
+  --text2:     #7a90b0;
+  --text3:     #3d5070;
+  --neon:      #00d2ff;
+  --neon2:     #00b8e0;
+  --gold:      #f5a623;
+  --gold2:     #d4890a;
+  --green:     #10d48e;
+  --danger:    #ff4757;
+  --warn:      #ffa502;
+  --purple:    #8b5cf6;
+  --shadow:    rgba(0,210,255,0.15);
+  --font:      'Inter', sans-serif;
+  --mono:      'JetBrains Mono', monospace;
+  --display:   'Syne', sans-serif;
+  --sidebar-w: 240px;
+  --topbar-h:  58px;
+  --radius:    12px;
+  --radius-lg: 18px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: var(--font); background: var(--bg); color: var(--text); font-size: 14px; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg2); }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
+::selection { background: rgba(0,210,255,0.25); }
+
+/* ═══════════════════════════════════════════
+   IRON LOCK — PANTALLA DE ACCESO
+═══════════════════════════════════════════ */
+#ironLock {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(0,210,255,0.07) 0%, transparent 60%),
+    radial-gradient(ellipse 40% 40% at 80% 80%, rgba(245,166,35,0.05) 0%, transparent 50%);
+  position: relative;
+  overflow: hidden;
+}
+
+#ironLock::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,210,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,210,255,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.lock-box {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 24px;
+  padding: 44px 36px 36px;
+  width: 100%;
+  max-width: 420px;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 0 80px rgba(0,210,255,0.08), 0 32px 64px rgba(0,0,0,0.5);
+  animation: lockIn 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+
+.lock-brand {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.lock-icon {
+  width: 72px; height: 72px;
+  background: linear-gradient(135deg, rgba(0,210,255,0.15), rgba(0,210,255,0.05));
+  border: 2px solid var(--border2);
+  border-radius: 20px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 30px;
+  margin: 0 auto 16px;
+  box-shadow: 0 0 24px rgba(0,210,255,0.15);
+}
+
+.lock-title {
+  font-family: var(--display);
+  font-size: 22px; font-weight: 800;
+  color: var(--text);
+  letter-spacing: 1px;
+}
+.lock-title span { color: var(--neon); }
+
+.lock-sub {
+  font-size: 11px; color: var(--text3);
+  margin-top: 4px; letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.lock-badge-a2k {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 10px;
+  padding: 4px 12px;
+  background: rgba(245,166,35,0.08);
+  border: 1px solid rgba(245,166,35,0.2);
+  border-radius: 20px;
+  font-size: 10px; font-weight: 700;
+  color: var(--gold); letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.lock-label {
+  font-size: 10px; font-weight: 700;
+  color: var(--text3); letter-spacing: 1.5px;
+  text-transform: uppercase; margin-bottom: 8px;
+  display: block;
+}
+
+.lock-input {
+  width: 100%;
+  background: var(--bg2);
+  border: 2px solid var(--border2);
+  color: var(--neon);
+  padding: 16px;
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: 17px; font-weight: 700;
+  text-align: center;
+  letter-spacing: 3px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  text-transform: uppercase;
+}
+.lock-input:focus {
+  border-color: var(--neon);
+  box-shadow: 0 0 0 3px rgba(0,210,255,0.12);
+}
+.lock-input::placeholder { color: var(--text3); letter-spacing: 1px; font-size: 13px; }
+
+.lock-btn {
+  width: 100%;
+  padding: 16px;
+  border: none; border-radius: var(--radius);
+  background: linear-gradient(135deg, var(--neon), var(--neon2));
+  color: #000;
+  font-family: var(--font);
+  font-size: 15px; font-weight: 900;
+  cursor: pointer;
+  letter-spacing: 1px;
+  margin-top: 14px;
+  transition: opacity 0.2s, transform 0.15s;
+  box-shadow: 0 4px 20px rgba(0,210,255,0.3);
+}
+.lock-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+.lock-btn:active { transform: translateY(0); }
+
+.lock-err {
+  display: none;
+  color: var(--danger);
+  font-size: 12px; font-weight: 700;
+  text-align: center;
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: rgba(255,71,87,0.08);
+  border: 1px solid rgba(255,71,87,0.2);
+  border-radius: 8px;
+}
+
+.lock-demo-hint {
+  margin-top: 16px; text-align: center;
+  font-size: 10px; color: var(--text3);
+}
+
+.lock-footer {
+  text-align: center; margin-top: 24px;
+  padding-top: 18px; border-top: 1px solid var(--border);
+  font-size: 10px; color: var(--text3);
+  letter-spacing: 0.5px;
+}
+.lock-footer b { color: var(--gold); }
+
+/* Device ID badge */
+.device-id-badge {
+  margin-top: 10px; text-align: center;
+  font-family: var(--mono); font-size: 9px;
+  color: var(--text3);
+}
+
+/* ═══════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════ */
+#app {
+  display: none;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  z-index: 50;
+  transition: width 0.2s;
+}
+
+.sidebar-brand {
+  padding: 18px 16px 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.brand-row { display: flex; align-items: center; gap: 10px; }
+.brand-icon {
+  width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--neon), #0099cc);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: #000; font-weight: 900;
+  box-shadow: 0 0 12px rgba(0,210,255,0.3);
+}
+.brand-name {
+  font-family: var(--display);
+  font-size: 14px; font-weight: 800;
+  color: var(--text); letter-spacing: 0.5px;
+}
+.brand-name span { color: var(--neon); }
+.brand-sub {
+  font-size: 9px; color: var(--text3); font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase; margin-top: 1px;
+}
+
+/* License status pill */
+.lic-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  margin-top: 8px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 9px; font-weight: 800; letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+.lic-pill.pro { background: rgba(0,210,255,0.1); border: 1px solid rgba(0,210,255,0.25); color: var(--neon); }
+.lic-pill.demo { background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.25); color: var(--gold); }
+.lic-pill.master { background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.25); color: var(--purple); }
+.lic-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; animation: pulse 2s infinite; }
+
+/* Nav */
+.sidebar-nav {
+  flex: 1; overflow-y: auto;
+  padding: 12px 8px;
+}
+.nav-section-title {
+  font-size: 9px; font-weight: 700; color: var(--text3);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  padding: 0 8px; margin: 12px 0 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 11px;
+  padding: 10px 12px; border-radius: 10px;
+  cursor: pointer; color: var(--text2);
+  font-size: 13px; font-weight: 600;
+  transition: all 0.18s;
+  border: 1px solid transparent;
+  margin-bottom: 2px;
+  position: relative;
+  user-select: none;
+}
+.nav-item:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+.nav-item.active {
+  background: rgba(0,210,255,0.08);
+  color: var(--neon);
+  border-color: rgba(0,210,255,0.18);
+}
+.nav-item .nav-icon { width: 18px; text-align: center; font-size: 14px; flex-shrink: 0; }
+.nav-item .nav-label { flex: 1; }
+.nav-badge {
+  min-width: 18px; height: 18px; padding: 0 5px;
+  background: var(--danger); color: #fff;
+  border-radius: 9px; font-size: 9px; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  animation: badgePulse 2s infinite;
+}
+.nav-badge.gold { background: var(--gold); color: #000; }
+.nav-badge.hidden { display: none; }
+
+/* Sidebar footer */
+.sidebar-footer {
+  padding: 12px 8px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sidebar-footer-btn {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 10px;
+  cursor: pointer; color: var(--text3);
+  font-size: 12px; font-weight: 600;
+  transition: all 0.18s;
+  width: 100%; border: none; background: none;
+  font-family: var(--font);
+}
+.sidebar-footer-btn:hover { background: rgba(255,71,87,0.08); color: var(--danger); }
+
+/* ── MAIN WRAPPER ── */
+.main-wrapper {
+  margin-left: var(--sidebar-w);
+  height: 100vh;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* ── TOPBAR ── */
+.topbar {
+  height: var(--topbar-h);
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 0 24px; gap: 16px;
+  flex-shrink: 0;
+}
+.topbar-title {
+  font-family: var(--display);
+  font-size: 16px; font-weight: 800;
+  color: var(--text); flex: 1;
+}
+.topbar-clock {
+  font-family: var(--mono);
+  font-size: 12px; color: var(--text3);
+}
+.topbar-rate {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 14px;
+  background: rgba(245,166,35,0.07);
+  border: 1px solid rgba(245,166,35,0.2);
+  border-radius: 8px;
+  font-size: 12px;
+}
+.topbar-rate-label { color: var(--text3); font-size: 10px; font-weight: 700; letter-spacing: 0.5px; }
+.topbar-rate-val { font-family: var(--mono); font-weight: 800; color: var(--gold); }
+.topbar-rate-edit {
+  padding: 2px 6px; border-radius: 5px; border: none;
+  background: rgba(245,166,35,0.15); color: var(--gold);
+  font-size: 10px; cursor: pointer; font-family: var(--font);
+  font-weight: 700;
+}
+
+/* ── MAIN CONTENT ── */
+.main-content {
+  flex: 1; overflow-y: auto;
+  padding: 24px;
+  background: var(--bg);
+  background-image: radial-gradient(ellipse 60% 40% at 80% 10%, rgba(0,210,255,0.03) 0%, transparent 50%);
+}
+
+/* ── VIEWS ── */
+.view { display: none; animation: fadeUp 0.3s ease-out both; }
+.view.active { display: block; }
+
+/* ═══════════════════════════════════════════
+   DESIGN SYSTEM — COMPONENTES
+═══════════════════════════════════════════ */
+
+/* ── Cards ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.card-head {
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(255,255,255,0.015);
+}
+.card-title {
+  font-size: 13px; font-weight: 700; color: var(--text);
+  display: flex; align-items: center; gap: 8px;
+}
+.card-body { padding: 18px; }
+
+/* ── Stat Cards ── */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px; margin-bottom: 20px;
+}
+.stat-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+  position: relative; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.stat-card:hover { border-color: var(--border2); }
+.stat-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.stat-card.neon::before { background: var(--neon); }
+.stat-card.gold::before { background: var(--gold); }
+.stat-card.green::before { background: var(--green); }
+.stat-card.danger::before { background: var(--danger); }
+.stat-card.purple::before { background: var(--purple); }
+.stat-label { font-size: 9px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 1.2px; margin-bottom: 8px; }
+.stat-val { font-family: var(--mono); font-size: 26px; font-weight: 700; line-height: 1; }
+.stat-val.neon { color: var(--neon); }
+.stat-val.gold { color: var(--gold); }
+.stat-val.green { color: var(--green); }
+.stat-val.danger { color: var(--danger); }
+.stat-val.purple { color: var(--purple); }
+.stat-sub { font-size: 10px; color: var(--text3); margin-top: 6px; }
+.stat-icon {
+  position: absolute; right: 16px; top: 16px;
+  font-size: 22px; opacity: 0.12;
+}
+
+/* ── Buttons ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px; border-radius: 9px; border: none;
+  font-family: var(--font); font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: all 0.18s; white-space: nowrap;
+}
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-neon { background: var(--neon); color: #000; box-shadow: 0 2px 12px rgba(0,210,255,0.25); }
+.btn-neon:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn-gold { background: var(--gold); color: #000; box-shadow: 0 2px 12px rgba(245,166,35,0.25); }
+.btn-gold:hover { opacity: 0.88; transform: translateY(-1px); }
+.btn-green { background: var(--green); color: #000; box-shadow: 0 2px 12px rgba(16,212,142,0.2); }
+.btn-green:hover { opacity: 0.88; }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { opacity: 0.88; }
+.btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+.btn-sm { padding: 6px 12px; font-size: 11px; border-radius: 7px; }
+.btn-xs { padding: 4px 9px; font-size: 10px; border-radius: 6px; }
+.btn-icon { padding: 8px; width: 34px; height: 34px; justify-content: center; }
+
+/* ── Inputs ── */
+.input-group { margin-bottom: 14px; }
+.input-label {
+  display: block; font-size: 10px; font-weight: 700;
+  color: var(--text3); letter-spacing: 1px; text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.inp {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 10px 13px;
+  border-radius: 9px;
+  font-family: var(--font); font-size: 13px;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.inp:focus { border-color: var(--neon); box-shadow: 0 0 0 3px rgba(0,210,255,0.08); }
+.inp::placeholder { color: var(--text3); }
+select.inp { cursor: pointer; }
+textarea.inp { resize: vertical; min-height: 80px; }
+.inp-row { display: grid; gap: 12px; }
+.inp-row.col2 { grid-template-columns: 1fr 1fr; }
+.inp-row.col3 { grid-template-columns: 1fr 1fr 1fr; }
+
+/* ── Tables ── */
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 500px; }
+thead th {
+  padding: 10px 14px; text-align: left;
+  font-size: 9px; font-weight: 800;
+  color: var(--text3); text-transform: uppercase; letter-spacing: 1.2px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+  white-space: nowrap;
+}
+tbody tr { transition: background 0.15s; }
+tbody tr:hover td { background: rgba(0,210,255,0.03); }
+tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 13px; color: var(--text2);
+  vertical-align: middle;
+}
+tbody td:first-child { color: var(--text); font-weight: 600; }
+
+/* ── Modals ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(2,7,18,0.85);
+  backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+.modal {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  width: 100%; max-width: 480px;
+  box-shadow: 0 0 80px rgba(0,0,0,0.6), 0 0 40px rgba(0,210,255,0.06);
+  animation: modalIn 0.25s cubic-bezier(0.34,1.56,0.64,1) both;
+  max-height: 90vh; overflow-y: auto;
+}
+.modal-lg { max-width: 640px; }
+.modal-head {
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: 15px; font-weight: 800; color: var(--text); }
+.modal-close {
+  width: 28px; height: 28px; border-radius: 8px;
+  border: 1px solid var(--border); background: none;
+  color: var(--text3); cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.modal-close:hover { background: rgba(255,71,87,0.1); color: var(--danger); border-color: var(--danger); }
+.modal-body { padding: 20px; }
+.modal-footer { padding: 14px 20px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+
+/* ── Badges ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 9px; border-radius: 20px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+.badge-ok { background: rgba(16,212,142,0.1); color: var(--green); border: 1px solid rgba(16,212,142,0.25); }
+.badge-warn { background: rgba(255,165,2,0.1); color: var(--warn); border: 1px solid rgba(255,165,2,0.25); }
+.badge-danger { background: rgba(255,71,87,0.1); color: var(--danger); border: 1px solid rgba(255,71,87,0.25); }
+.badge-neon { background: rgba(0,210,255,0.08); color: var(--neon); border: 1px solid rgba(0,210,255,0.2); }
+.badge-gold { background: rgba(245,166,35,0.1); color: var(--gold); border: 1px solid rgba(245,166,35,0.25); }
+.badge-purple { background: rgba(139,92,246,0.1); color: var(--purple); border: 1px solid rgba(139,92,246,0.25); }
+
+/* ── Tags de categoría ── */
+.cat-tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 6px;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.cat-construccion { background: rgba(245,166,35,0.12); color: var(--gold); }
+.cat-plomeria    { background: rgba(0,210,255,0.10); color: var(--neon); }
+.cat-electrico   { background: rgba(255,165,2,0.12); color: var(--warn); }
+.cat-herramientas{ background: rgba(139,92,246,0.12); color: var(--purple); }
+.cat-pinturas    { background: rgba(16,212,142,0.10); color: var(--green); }
+.cat-general     { background: rgba(122,144,176,0.12); color: var(--text2); }
+
+/* ── Toast ── */
+#toast-container {
+  position: fixed; bottom: 24px; right: 24px;
+  display: flex; flex-direction: column; gap: 8px;
+  z-index: 999; pointer-events: none;
+}
+.toast {
+  padding: 12px 18px; border-radius: 12px;
+  font-size: 13px; font-weight: 700;
+  border: 1px solid; pointer-events: all;
+  animation: toastIn 0.3s ease-out;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  max-width: 320px;
+}
+.toast-ok { background: rgba(16,212,142,0.12); border-color: rgba(16,212,142,0.3); color: var(--green); }
+.toast-err { background: rgba(255,71,87,0.12); border-color: rgba(255,71,87,0.3); color: var(--danger); }
+.toast-warn { background: rgba(255,165,2,0.12); border-color: rgba(255,165,2,0.3); color: var(--warn); }
+.toast-info { background: rgba(0,210,255,0.10); border-color: rgba(0,210,255,0.25); color: var(--neon); }
+
+/* ── Section title ── */
+.section-title {
+  font-size: 10px; font-weight: 800; color: var(--text3);
+  letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
+
+/* ── Page header ── */
+.page-hdr {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; flex-wrap: wrap; gap: 12px;
+}
+.page-hdr-title {
+  font-family: var(--display);
+  font-size: 20px; font-weight: 800; color: var(--text);
+}
+.page-hdr-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* ── Search bar ── */
+.search-bar {
+  display: flex; align-items: center;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 9px; padding: 0 12px; gap: 8px;
+  transition: border-color 0.2s;
+}
+.search-bar:focus-within { border-color: var(--neon); }
+.search-bar i { color: var(--text3); font-size: 13px; }
+.search-bar input {
+  background: none; border: none; outline: none;
+  color: var(--text); font-family: var(--font);
+  font-size: 13px; padding: 9px 0; flex: 1;
+}
+.search-bar input::placeholder { color: var(--text3); }
+
+/* ── Tabs ── */
+.tabs {
+  display: flex; gap: 4px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px; padding: 4px;
+  margin-bottom: 18px;
+}
+.tab-btn {
+  flex: 1; padding: 8px 14px;
+  border-radius: 7px; border: none;
+  background: none; color: var(--text3);
+  font-family: var(--font); font-size: 12px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+}
+.tab-btn.active { background: var(--card2); color: var(--neon); }
+
+/* ── Divider ── */
+hr.div { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+/* ── Empty state ── */
+.empty-state {
+  text-align: center; padding: 48px 20px;
+}
+.empty-icon { font-size: 40px; opacity: 0.2; margin-bottom: 12px; }
+.empty-title { font-size: 14px; color: var(--text3); font-weight: 600; }
+.empty-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+/* ── Progress bar ── */
+.progress-bar {
+  height: 4px; background: var(--border); border-radius: 2px; overflow: hidden;
+}
+.progress-fill { height: 100%; border-radius: 2px; transition: width 0.5s ease; }
+.progress-fill.neon { background: var(--neon); }
+.progress-fill.gold { background: var(--gold); }
+.progress-fill.danger { background: var(--danger); }
+
+/* ── Utility ── */
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.g-14 { gap: 14px; }
+.mb-4 { margin-bottom: 16px; }
+.mb-5 { margin-bottom: 20px; }
+.mt-4 { margin-top: 16px; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.text-right { text-align: right; }
+.text-center { text-align: center; }
+.mono { font-family: var(--mono); }
+.neon-text { color: var(--neon); }
+.gold-text { color: var(--gold); }
+.green-text { color: var(--green); }
+.danger-text { color: var(--danger); }
+.muted { color: var(--text3); }
+.fw-900 { font-weight: 900; }
+
+/* ── Animaciones ── */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes lockIn { from { opacity: 0; transform: scale(0.94) translateY(16px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes modalIn { from { opacity: 0; transform: scale(0.93) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+@keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+@keyframes badgePulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,71,87,0.4); } 50% { box-shadow: 0 0 0 4px rgba(255,71,87,0); } }
+@keyframes shake { 0%,100% { transform: translateX(0); } 20%,60% { transform: translateX(-6px); } 40%,80% { transform: translateX(6px); } }
+.shake { animation: shake 0.4s ease both !important; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { animation: spin 1s linear infinite; }
+
+/* ─── POS layout ─── */
+.pos-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 0;
+  height: calc(100vh - var(--topbar-h) - 48px);
+  min-height: 500px;
+}
+.pos-products {
+  overflow-y: auto;
+  padding-right: 16px;
+}
+.pos-cart {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.cart-head {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+.cart-items { flex: 1; overflow-y: auto; padding: 10px; }
+.cart-item {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 9px; padding: 10px 12px;
+  margin-bottom: 6px;
+}
+.cart-item-name { flex: 1; font-size: 12px; font-weight: 700; color: var(--text); }
+.cart-item-unit { font-size: 10px; color: var(--text3); margin-top: 1px; }
+.qty-ctrl { display: flex; align-items: center; gap: 6px; }
+.qty-btn {
+  width: 22px; height: 22px; border-radius: 6px;
+  border: 1px solid var(--border2); background: var(--bg2);
+  color: var(--text2); cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.qty-btn:hover { background: var(--neon); color: #000; border-color: var(--neon); }
+.qty-num { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--text); min-width: 22px; text-align: center; }
+.cart-item-price { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--neon); white-space: nowrap; }
+.remove-btn { color: var(--text3); cursor: pointer; font-size: 13px; transition: color 0.15s; background: none; border: none; }
+.remove-btn:hover { color: var(--danger); }
+.cart-footer {
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  background: var(--bg2);
+}
+.cart-total-usd { font-family: var(--mono); font-size: 32px; font-weight: 900; color: var(--neon); line-height: 1; }
+.cart-total-bs { font-family: var(--mono); font-size: 14px; color: var(--gold); margin-top: 2px; }
+
+/* Productos grid */
+.prod-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.prod-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  cursor: pointer; transition: all 0.2s;
+  text-align: center;
+}
+.prod-card:hover { border-color: var(--neon); transform: translateY(-2px); box-shadow: 0 0 20px rgba(0,210,255,0.1); }
+.prod-card.agotado { opacity: 0.45; cursor: not-allowed; }
+.prod-card-emoji { font-size: 26px; margin-bottom: 8px; }
+.prod-card-name { font-size: 11px; font-weight: 700; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+.prod-card-price { font-family: var(--mono); font-size: 14px; font-weight: 800; color: var(--neon); }
+.prod-card-stock { font-size: 9px; color: var(--text3); margin-top: 3px; }
+
+/* Método de pago btns */
+.pay-btns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 12px 0; }
+.pay-btn {
+  padding: 10px 6px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--bg3); color: var(--text2);
+  font-size: 10px; font-weight: 700; cursor: pointer;
+  text-align: center; transition: all 0.15s; font-family: var(--font);
+  line-height: 1.3;
+}
+.pay-btn:hover { border-color: var(--neon); color: var(--neon); }
+.pay-btn.selected { background: rgba(0,210,255,0.1); border-color: var(--neon); color: var(--neon); }
+
+/* Low stock alert */
+.stock-alert-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255,71,87,0.06);
+  border: 1px solid rgba(255,71,87,0.15);
+  border-radius: 9px; margin-bottom: 6px;
+}
+.stock-alert-name { flex: 1; font-size: 12px; font-weight: 700; color: var(--text); }
+.stock-alert-qty { font-family: var(--mono); font-size: 13px; font-weight: 800; color: var(--danger); }
+
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     IRON LOCK V2 — PANTALLA DE ACCESO
+═══════════════════════════════════════════════ -->
+<div id="ironLock">
+  <div class="lock-box">
+
+    <div class="lock-brand">
+      <div class="lock-icon">🔩</div>
+      <div class="lock-title">Ferretería <span>Pro</span></div>
+      <div class="lock-sub">Sistema de Gestión Comercial</div>
+      <div class="lock-badge-a2k">
+        <i class="fas fa-bolt"></i> A2K Digital Studio
+      </div>
+    </div>
+
+    <div>
+      <label class="lock-label" for="lockInput">Clave de Licencia</label>
+      <input
+        class="lock-input"
+        id="lockInput"
+        type="text"
+        placeholder="FERR-PRO-XXXXXX-0000-0000"
+        autocomplete="off"
+        spellcheck="false"
+        onkeydown="if(event.key==='Enter') intentarActivar()"
+      >
+      <div class="lock-err" id="lockErr"></div>
+      <button class="lock-btn" onclick="intentarActivar()">
+        <i class="fas fa-unlock-alt"></i>&nbsp; ACTIVAR SISTEMA
+      </button>
+    </div>
+
+    <div class="lock-demo-hint">
+      ¿No tienes clave? Contacta a <b style="color:var(--gold)">A2K Digital Studio</b> para obtener una licencia.
+    </div>
+
+    <div class="device-id-badge" id="deviceIdBadge">
+      ID Dispositivo: <span id="deviceIdTxt">—</span>
+    </div>
+
+    <div class="lock-footer">
+      Ferretería Pro v2.0 &nbsp;·&nbsp; <b>A2K Digital Studio</b><br>
+      Iron Lock v2 — Licencia vinculada al equipo
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════
+     APP SHELL — visible solo con licencia válida
+═══════════════════════════════════════════════ -->
+<div id="app" style="display:none; height:100vh; overflow:hidden;">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-row">
+        <div class="brand-icon">🔩</div>
+        <div>
+          <div class="brand-name">Ferretería <span>Pro</span></div>
+          <div class="brand-sub">A2K Digital Studio</div>
+        </div>
+      </div>
+      <div id="licPill" class="lic-pill pro">
+        <span class="lic-dot"></span>
+        <span id="licTipoLabel">PRO</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Principal</div>
+
+      <div class="nav-item active" onclick="nav('dash',this)" data-title="Dashboard" data-view="dash">
+        <span class="nav-icon"><i class="fas fa-chart-line"></i></span>
+        <span class="nav-label">Dashboard</span>
+      </div>
+
+      <div class="nav-item" onclick="nav('ventas',this)" data-title="Punto de Venta" data-view="ventas">
+        <span class="nav-icon"><i class="fas fa-cash-register"></i></span>
+        <span class="nav-label">Punto de Venta</span>
+      </div>
+
+      <div class="nav-section-title">Gestión</div>
+
+      <div class="nav-item" onclick="nav('inventario',this)" data-title="Inventario" data-view="inventario">
+        <span class="nav-icon"><i class="fas fa-boxes-stacked"></i></span>
+        <span class="nav-label">Inventario</span>
+        <span class="nav-badge hidden" id="badge-inv">0</span>
+      </div>
+
+      <div class="nav-item" onclick="nav('clientes',this)" data-title="Clientes / Fiados" data-view="clientes">
+        <span class="nav-icon"><i class="fas fa-users"></i></span>
+        <span class="nav-label">Clientes</span>
+        <span class="nav-badge gold hidden" id="badge-cli">0</span>
+      </div>
+
+      <div class="nav-item" onclick="nav('caja',this)" data-title="Gestión de Caja" data-view="caja">
+        <span class="nav-icon"><i class="fas fa-money-bill-wave"></i></span>
+        <span class="nav-label">Caja</span>
+      </div>
+
+      <div class="nav-item" onclick="nav('proveedores',this)" data-title="Proveedores" data-view="proveedores">
+        <span class="nav-icon"><i class="fas fa-truck"></i></span>
+        <span class="nav-label">Proveedores</span>
+      </div>
+
+      <div class="nav-section-title">Análisis</div>
+
+      <div class="nav-item" onclick="nav('reportes',this)" data-title="Reportes" data-view="reportes">
+        <span class="nav-icon"><i class="fas fa-chart-pie"></i></span>
+        <span class="nav-label">Reportes</span>
+      </div>
+
+      <div class="nav-item" onclick="nav('config',this)" data-title="Configuración" data-view="config">
+        <span class="nav-icon"><i class="fas fa-gears"></i></span>
+        <span class="nav-label">Configuración</span>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="sidebar-footer-btn" onclick="cerrarSesion()">
+        <i class="fas fa-right-from-bracket"></i>
+        Cerrar Sesión
+      </button>
+    </div>
+  </div>
+
+  <!-- MAIN WRAPPER -->
+  <div class="main-wrapper" style="margin-left:var(--sidebar-w); display:flex; flex-direction:column; height:100vh; overflow:hidden;">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="topbar-title" id="pageTitle">Dashboard</div>
+      <div class="topbar-clock" id="topbarClock">—</div>
+      <div class="topbar-rate">
+        <div>
+          <div class="topbar-rate-label">TASA BCV</div>
+          <div class="topbar-rate-val" id="topbarTasa">Bs 0.00</div>
+        </div>
+        <button class="topbar-rate-edit" onclick="editarTasa()"><i class="fas fa-pencil"></i></button>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="main-content" id="mainContent">
+
+      <!-- ── DASHBOARD ── -->
+      <div id="v-dash" class="view active">
+        <div id="dash-placeholder" style="text-align:center;padding:60px 20px;color:var(--text3);">
+          <div style="font-size:40px;margin-bottom:12px;">⚡</div>
+          <div>Cargando módulos… (Parte 2)</div>
+        </div>
+      </div>
+
+      <!-- ── VENTAS / POS ── -->
+      <div id="v-ventas" class="view">
+        <div id="ventas-placeholder" style="text-align:center;padding:60px 20px;color:var(--text3);">
+          <div style="font-size:40px;margin-bottom:12px;">🛒</div>
+          <div>Módulo POS — Parte 2</div>
+        </div>
+      </div>
+
+      <!-- ── INVENTARIO ── -->
+      <div id="v-inventario" class="view">
+        <div id="inv-placeholder" style="text-align:center;padding:60px 20px;color:var(--text3);">
+          <div style="font-size:40px;margin-bottom:12px;">📦</div>
+          <div>Módulo Inventario — Parte 2</div>
+        </div>
+      </div>
+
+      <!-- ── CLIENTES ── -->
+      <div id="v-clientes" class="view">
+        <div id="cli-placeholder" style="text-align:center;padding:60px 20px;color:var(--text3);">
+          <div style="font-size:40px;margin-bottom:12px;">👥</div>
+          <div>Módulo Clientes — Parte 2</div>
+        </div>
+      </div>
+
+      <!-- ── CAJA ── -->
+      <div id="v-caja" class="view">
+        <div id="caja-placeholder" style="text-align:center;padding:60px 20px;color:var(--text3);">
+          <div style="font-size:40px;margin-bottom:12px;">💰</div>
+          <div>Módulo Caja — Parte 2</div>
+        </div>
+      </div>
+
+      <!-- ── PROVEEDORES ── -->
+      <div id="v-proveedores" class="view">
+        <div id="prov-placeholder" style="text-align:center;padding:60px 20px;color:var(--text3);">
+          <div style="font-size:40px;margin-bottom:12px;">🚚</div>
+          <div>Módulo Proveedores — Parte 2</div>
+        </div>
+      </div>
+
+      <!-- ── REPORTES ── -->
+      <div id="v-reportes" class="view">
+        <div id="rep-placeholder" style="text-align:center;padding:60px 20px;color:var(--text3);">
+          <div style="font-size:40px;margin-bottom:12px;">📊</div>
+          <div>Módulo Reportes — Parte 2</div>
+        </div>
+      </div>
+
+      <!-- ── CONFIG ── -->
+      <div id="v-config" class="view">
+        <div id="cfg-placeholder" style="text-align:center;padding:60px 20px;color:var(--text3);">
+          <div style="font-size:40px;margin-bottom:12px;">⚙️</div>
+          <div>Módulo Config — Parte 2</div>
+        </div>
+      </div>
+
+    </div><!-- /main-content -->
+  </div><!-- /main-wrapper -->
+</div><!-- /app -->
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+
+<!-- ═══════════════════════════════════════════════
+     SCRIPTS — PARTE 1: DB LAYER + IRON LOCK V2
+═══════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ─────────────────────────────────────────────
+   DB LAYER — localStorage con fallback seguro
+───────────────────────────────────────────── */
+const DB = {
+  get(key, def = null) {
+    try { const v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : def; }
+    catch { return def; }
+  },
+  set(key, val) { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) { console.warn('DB.set error', e); } },
+  del(key) { localStorage.removeItem(key); },
+  push(key, item, max = 5000) {
+    const arr = this.get(key, []);
+    arr.unshift(item);
+    if (arr.length > max) arr.length = max;
+    this.set(key, arr);
+  }
+};
+
+/* ─────────────────────────────────────────────
+   DEVICE FINGERPRINT V3 — hardware binding
+   ID determinístico: mismo equipo → mismo FP.
+   Copiar localStorage a otra PC no funciona
+   porque el hardware produce un hash distinto.
+   Componentes: canvas GPU render · WebGL
+   renderer/vendor · pantalla · platform ·
+   CPU cores · touch · timezone · languages.
+───────────────────────────────────────────── */
+function _fpCanvas() {
+  try {
+    const c = document.createElement('canvas');
+    c.width = 320; c.height = 60;
+    const x = c.getContext('2d');
+    // Fondo con gradiente (sensible al motor de render)
+    const g = x.createLinearGradient(0, 0, 320, 60);
+    g.addColorStop(0, '#0d1528'); g.addColorStop(1, '#020712');
+    x.fillStyle = g; x.fillRect(0, 0, 320, 60);
+    // Texto con anti-aliasing específico del GPU
+    x.textBaseline = 'alphabetic';
+    x.fillStyle = '#00d2ff';
+    x.font = 'bold 16px Arial, Helvetica, sans-serif';
+    x.fillText('A2K FerrPro 🔑 2026 ★', 4, 32);
+    x.fillStyle = 'rgba(245,166,35,0.85)';
+    x.font = '11px "Courier New", monospace';
+    x.fillText('hardware-lock · device-bind', 6, 50);
+    // Arco con color sensible a subpixel rendering
+    x.strokeStyle = 'rgba(16,212,142,0.6)';
+    x.lineWidth = 1.5;
+    x.beginPath(); x.arc(295, 30, 20, 0, Math.PI * 1.7); x.stroke();
+    return c.toDataURL('image/png').slice(-112);
+  } catch { return 'X_CV'; }
+}
+
+function _fpWebGL() {
+  try {
+    const c  = document.createElement('canvas');
+    const gl = c.getContext('webgl') || c.getContext('experimental-webgl');
+    if (!gl) return 'X_GL';
+    const ext = gl.getExtension('WEBGL_debug_renderer_info');
+    const renderer = ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : '';
+    const vendor   = ext ? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL)   : '';
+    const version  = gl.getParameter(gl.VERSION);
+    const slVer    = gl.getParameter(gl.SHADING_LANGUAGE_VERSION);
+    return [renderer, vendor, version, slVer].join('§');
+  } catch { return 'X_GL'; }
+}
+
+function _fpHash(str) {
+  // MurmurHash3 32-bit × 2 → 64-bit hex
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) {
+    const ch = str.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 0x9e3779b9);
+    h2 = Math.imul(h2 ^ ch, 0x5f4a0bc5);
+  }
+  h1 ^= Math.imul(h1 ^ (h1 >>> 16), 0x45d9f3b);
+  h2 ^= Math.imul(h2 ^ (h2 >>> 13), 0x45d9f3b);
+  h1 = (h1 >>> 0); h2 = (h2 >>> 0);
+  // Construir hex de 16 chars sin notación científica
+  const lo  = h1.toString(16).padStart(8, '0').toUpperCase();
+  const hi  = h2.toString(16).padStart(8, '0').toUpperCase();
+  const hex = hi + lo;
+  return `FP${hex.slice(0,4)}-${hex.slice(4,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}`;
+}
+
+function getDeviceId() {
+  const n = navigator, s = screen;
+  const tz = (typeof Intl !== 'undefined')
+    ? Intl.DateTimeFormat().resolvedOptions().timeZone
+    : new Date().getTimezoneOffset().toString();
+
+  const raw = [
+    _fpCanvas(),                               // GPU / render engine
+    _fpWebGL(),                                // Tarjeta gráfica
+    n.platform           || 'UNK',             // Win32 / MacIntel / Linux…
+    `${s.width}×${s.height}×${s.colorDepth}`, // Resolución + profundidad color
+    (window.devicePixelRatio || 1).toFixed(2), // HiDPI
+    n.hardwareConcurrency || 0,                // Núcleos de CPU
+    n.maxTouchPoints      || 0,                // Touchscreen sí/no
+    new Date().getTimezoneOffset(),            // Offset UTC
+    tz,                                        // Zona horaria IANA
+    (n.languages || [n.language]).slice(0,3).join(',') // Idiomas del browser
+  ].join('‖');
+
+  return _fpHash(raw);  // Determinístico: mismo HW → mismo ID
+}
+
+/* ─────────────────────────────────────────────
+   IRON LOCK V2
+   Formato PRO:  FERR-PRO-[CLIENT6]-[RAND4]-[CHECK4]
+   Formato DEMO: FERR-DEMO-[RAND6]-[RAND4]-[CHECK4]
+   Check = sum(ASCII de body) mod 9999, 4 dígitos
+───────────────────────────────────────────── */
+const MASTER_CODES = ['FERR-MAST-2024', 'FERR-A2K-2026', 'FERR-GOD-2026'];
+const DEMO_DIAS    = 5;
+
+function ironCheck(body) {
+  let s = 0;
+  for (const c of body) s += c.charCodeAt(0);
+  return (s % 9999).toString().padStart(4, '0');
+}
+
+function validarClave(raw) {
+  const k = (raw || '').trim().toUpperCase();
+  if (!k) return { valida: false, error: 'Ingresa tu clave de licencia.' };
+
+  // Master bypass
+  if (MASTER_CODES.includes(k)) return { valida: true, tipo: 'MASTER' };
+
+  const parts = k.split('-');
+  // Esperamos exactamente 5 segmentos: FERR · PRO/DEMO · SEG3 · SEG4 · CHECK
+  if (parts.length !== 5)  return { valida: false, error: 'Formato inválido. Ej: FERR-PRO-XXXXXX-0000-0000' };
+  if (parts[0] !== 'FERR') return { valida: false, error: 'Prefijo incorrecto. La clave debe comenzar con FERR.' };
+
+  const tipo = parts[1];
+  if (tipo !== 'PRO' && tipo !== 'DEMO')
+    return { valida: false, error: 'Tipo de licencia no reconocido.' };
+
+  // Verificar checksum
+  const body     = parts.slice(0, 4).join('-');
+  const check    = parts[4];
+  const expected = ironCheck(body);
+
+  if (check !== expected)
+    return { valida: false, error: 'Clave corrupta o falsificada. Solicita una nueva a A2K.' };
+
+  return { valida: true, tipo };
+}
+
+function activarLicencia(raw) {
+  const res = validarClave(raw);
+  if (!res.valida) return res;
+
+  const deviceId  = getDeviceId();
+  const licActual = DB.get('ferr_licencia', null);
+  const now       = new Date().toISOString();
+
+  // Bloquear si un DISPOSITIVO DIFERENTE intenta usar esta clave (excepto MASTER o re-vinculación de la misma clave)
+  const mismaClaveGuardada = licActual && licActual.clave === raw.trim().toUpperCase();
+  if (licActual && licActual.deviceId && licActual.deviceId !== deviceId && res.tipo !== 'MASTER' && !mismaClaveGuardada) {
+    return { valida: false, error: 'Esta clave ya está vinculada a otro equipo. Contacta a A2K Digital Studio para reasignación.' };
+  }
+
+  DB.set('ferr_licencia', {
+    clave:       raw.trim().toUpperCase(),
+    tipo:        res.tipo,
+    deviceId:    res.tipo === 'MASTER' ? null : deviceId,
+    activadoEn:  licActual?.activadoEn || now,
+    ultimoAcceso: now
+  });
+
+  return { valida: true, tipo: res.tipo };
+}
+
+function verificarSesion() {
+  const lic = DB.get('ferr_licencia', null);
+  if (!lic) return false;
+
+  const deviceId = getDeviceId();
+
+  // Verificar device (no eliminar licencia — puede ser drift de fingerprint)
+  if (lic.tipo !== 'MASTER' && lic.deviceId && lic.deviceId !== deviceId) {
+    return false;  // Bloquea acceso; usuario debe re-ingresar su clave
+  }
+
+  // Verificar expiración DEMO
+  if (lic.tipo === 'DEMO') {
+    const activado   = new Date(lic.activadoEn);
+    const diasPasados = (Date.now() - activado.getTime()) / 864e5;
+    if (diasPasados > DEMO_DIAS) {
+      DB.del('ferr_licencia');
+      return false;
+    }
+  }
+
+  // Actualizar último acceso
+  lic.ultimoAcceso = new Date().toISOString();
+  DB.set('ferr_licencia', lic);
+  return true;
+}
+
+function diasRestantesDemo() {
+  const lic = DB.get('ferr_licencia', null);
+  if (!lic || lic.tipo !== 'DEMO') return null;
+  const dias = DEMO_DIAS - (Date.now() - new Date(lic.activadoEn).getTime()) / 864e5;
+  return Math.max(0, Math.ceil(dias));
+}
+
+/* ─────────────────────────────────────────────
+   NAVEGACIÓN
+───────────────────────────────────────────── */
+function nav(viewId, el) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const view = document.getElementById('v-' + viewId);
+  if (view) view.classList.add('active');
+  if (el) el.classList.add('active');
+  const title = el?.dataset?.title || viewId.charAt(0).toUpperCase() + viewId.slice(1);
+  document.getElementById('pageTitle').textContent = title;
+  // Render hooks — llamados por Parte 2
+  const hooks = { dash: renderDash, ventas: renderVentas, inventario: renderInventario, clientes: renderClientes, caja: renderCaja, proveedores: renderProveedores, reportes: renderReportes, config: renderConfig };
+  if (typeof hooks[viewId] === 'function') hooks[viewId]();
+}
+
+/* ─────────────────────────────────────────────
+   BOOT
+───────────────────────────────────────────── */
+function mostrarLock() {
+  document.getElementById('ironLock').style.display = 'flex';
+  document.getElementById('app').style.display      = 'none';
+  // Mostrar device ID en la pantalla de lock
+  const did = getDeviceId();
+  document.getElementById('deviceIdTxt').textContent = did;
+}
+
+function mostrarApp() {
+  document.getElementById('ironLock').style.display = 'none';
+  document.getElementById('app').style.display      = 'flex';
+  // Configurar pill de licencia
+  const lic   = DB.get('ferr_licencia', {});
+  const pill  = document.getElementById('licPill');
+  const label = document.getElementById('licTipoLabel');
+  pill.className = 'lic-pill ' + (lic.tipo || 'pro').toLowerCase();
+  label.textContent = lic.tipo || 'PRO';
+  // Demo warning
+  if (lic.tipo === 'DEMO') {
+    const dias = diasRestantesDemo();
+    setTimeout(() => toast(`Modo DEMO — ${dias} día(s) restante(s)`, 'warn'), 800);
+  }
+  // Iniciar reloj
+  startClock();
+  // Cargar tasa en topbar
+  actualizarTopbarTasa();
+  // Init app (definido en Parte 2)
+  if (typeof initApp === 'function') initApp();
+}
+
+function intentarActivar() {
+  const inp    = document.getElementById('lockInput');
+  const errEl  = document.getElementById('lockErr');
+  const clave  = inp.value;
+
+  errEl.style.display = 'none';
+  inp.style.borderColor = '';
+
+  const res = activarLicencia(clave);
+  if (res.valida) {
+    inp.style.borderColor = 'var(--neon)';
+    inp.style.boxShadow = '0 0 0 3px rgba(0,210,255,0.2)';
+    setTimeout(mostrarApp, 350);
+  } else {
+    errEl.textContent   = '⚠ ' + (res.error || 'Clave inválida.');
+    errEl.style.display = 'block';
+    inp.style.borderColor = 'var(--danger)';
+    inp.classList.add('shake');
+    setTimeout(() => inp.classList.remove('shake'), 450);
+  }
+}
+
+function cerrarSesion() {
+  if (!confirm('¿Cerrar sesión?\n(Deberás ingresar tu clave de licencia nuevamente)')) return;
+  DB.del('ferr_licencia');
+  location.reload();
+}
+
+/* ─────────────────────────────────────────────
+   TOAST
+───────────────────────────────────────────── */
+function toast(msg, type = 'ok', duration = 3000) {
+  const tc   = document.getElementById('toast-container');
+  const el   = document.createElement('div');
+  const types = { ok: 'toast-ok', err: 'toast-err', warn: 'toast-warn', info: 'toast-info' };
+  el.className = 'toast ' + (types[type] || 'toast-info');
+  const icons  = { ok: '✅', err: '❌', warn: '⚠️', info: 'ℹ️' };
+  el.textContent = (icons[type] || '') + ' ' + msg;
+  tc.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity 0.3s'; setTimeout(() => el.remove(), 300); }, duration);
+}
+
+/* ─────────────────────────────────────────────
+   RELOJ
+───────────────────────────────────────────── */
+function startClock() {
+  const el = document.getElementById('topbarClock');
+  const tick = () => {
+    const now = new Date();
+    el.textContent = now.toLocaleDateString('es-VE', { weekday:'short', day:'2-digit', month:'short' }) +
+      ' — ' + now.toLocaleTimeString('es-VE', { hour:'2-digit', minute:'2-digit' });
+  };
+  tick();
+  setInterval(tick, 30000);
+}
+
+/* ─────────────────────────────────────────────
+   TASA BCV — topbar helper
+───────────────────────────────────────────── */
+function actualizarTopbarTasa() {
+  const cfg  = DB.get('ferr_config', {});
+  const tasa = cfg.tasaBCV || 0;
+  document.getElementById('topbarTasa').textContent = tasa > 0 ? `Bs ${tasa.toFixed(2)}` : 'No configurada';
+}
+
+function editarTasa() {
+  const cfg     = DB.get('ferr_config', {});
+  const actual  = cfg.tasaBCV || '';
+  const nueva   = prompt('Tasa BCV actual (Bs por $):', actual);
+  if (nueva === null) return;
+  const v = parseFloat(nueva);
+  if (isNaN(v) || v <= 0) { toast('Tasa inválida', 'err'); return; }
+  cfg.tasaBCV = v;
+  DB.set('ferr_config', cfg);
+  actualizarTopbarTasa();
+  toast(`Tasa actualizada: Bs ${v.toFixed(2)}/$`, 'ok');
+}
+
+/* ─────────────────────────────────────────────
+   STUBS — reemplazados por Parte 2
+───────────────────────────────────────────── */
+function renderDash()        { /* Parte 2 */ }
+function renderVentas()      { /* Parte 2 */ }
+function renderInventario()  { /* Parte 2 */ }
+function renderClientes()    { /* Parte 2 */ }
+function renderCaja()        { /* Parte 2 */ }
+function renderProveedores() { /* Parte 2 */ }
+function renderReportes()    { /* Parte 2 */ }
+function renderConfig()      { /* Parte 2 */ }
+function initApp()           { /* Parte 2 */ }
+
+/* ─────────────────────────────────────────────
+   ARRANQUE
+───────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  if (verificarSesion()) mostrarApp();
+  else mostrarLock();
+});
+</script>
+
+<!-- ═══════════════════════════════════════════════
+     PARTE 2 — MÓDULOS COMPLETOS
+     Dashboard · POS · Inventario · Clientes
+     Caja · Proveedores · Reportes · Config
+═══════════════════════════════════════════════ -->
+<script>
+'use strict';
+
+/* ─────────────────────────────────────────────
+   CONSTANTES Y CATÁLOGOS
+───────────────────────────────────────────── */
+const CATEGORIAS = {
+  construccion: { label:'Construcción', emoji:'🧱', css:'cat-construccion' },
+  plomeria:     { label:'Plomería',     emoji:'🚿', css:'cat-plomeria'     },
+  electrico:    { label:'Eléctrico',    emoji:'⚡', css:'cat-electrico'    },
+  herramientas: { label:'Herramientas', emoji:'🔧', css:'cat-herramientas' },
+  pinturas:     { label:'Pinturas',     emoji:'🎨', css:'cat-pinturas'     },
+  general:      { label:'General',      emoji:'📦', css:'cat-general'      },
+};
+
+const UNIDADES   = ['und','saco','rollo','metro','m2','m3','galon','caja','kg','litro','par','paquete'];
+const METODOS    = ['Efectivo $','Pago Móvil Bs','Zelle','Transferencia Bs','Fiado'];
+const METODO_BS  = ['Pago Móvil Bs','Transferencia Bs'];
+const METODO_USD = ['Efectivo $','Zelle'];
+
+/* ─────────────────────────────────────────────
+   SEED DATA — productos y clientes demo
+───────────────────────────────────────────── */
+const SEED_KEY = 'ferr_seed_v2_loaded';
+
+const SEED_PRODS = [
+  { id:10001, codigo:'FERR-001', nombre:'Saco de Cemento 42.5 kg',      categoria:'construccion', unidad:'saco',  precioCosto:12.00, precioVenta:15.50, stock:48, stockMin:10 },
+  { id:10002, codigo:'FERR-002', nombre:'Cabilla 3/8" x 9m',            categoria:'construccion', unidad:'und',   precioCosto:6.00,  precioVenta:8.00,  stock:85, stockMin:20 },
+  { id:10003, codigo:'FERR-003', nombre:'Tubo PVC 4" x 3m',             categoria:'plomeria',     unidad:'und',   precioCosto:3.50,  precioVenta:5.00,  stock:30, stockMin:15 },
+  { id:10004, codigo:'FERR-004', nombre:'Cable #12 AWG (rollo 100m)',   categoria:'electrico',    unidad:'rollo', precioCosto:22.00, precioVenta:30.00, stock:8,  stockMin:5  },
+  { id:10005, codigo:'FERR-005', nombre:'Pintura Caucho Blanca 4L',     categoria:'pinturas',     unidad:'galon', precioCosto:8.00,  precioVenta:12.00, stock:3,  stockMin:8  },
+  { id:10006, codigo:'FERR-006', nombre:'Taladro Percutor 750W',        categoria:'herramientas', unidad:'und',   precioCosto:45.00, precioVenta:65.00, stock:5,  stockMin:2  },
+  { id:10007, codigo:'FERR-007', nombre:'Llave Francesa 12"',           categoria:'herramientas', unidad:'und',   precioCosto:4.00,  precioVenta:6.50,  stock:22, stockMin:8  },
+  { id:10008, codigo:'FERR-008', nombre:'Arena Lavada (m³)',             categoria:'construccion', unidad:'m3',    precioCosto:8.00,  precioVenta:12.00, stock:15, stockMin:5  },
+  { id:10009, codigo:'FERR-009', nombre:'Codo PVC 4" 90°',              categoria:'plomeria',     unidad:'und',   precioCosto:0.80,  precioVenta:1.50,  stock:60, stockMin:20 },
+  { id:10010, codigo:'FERR-010', nombre:'Breker 20A Schneider',         categoria:'electrico',    unidad:'und',   precioCosto:5.50,  precioVenta:8.00,  stock:12, stockMin:5  },
+];
+
+const SEED_CLIENTES = [
+  { id:20001, nombre:'Constructora Tuy C.A.',  cedula:'J-12345678-9', tel:'0412-1234567', deuda:120.00, historial:[] },
+  { id:20002, nombre:'Abigail Rojas',          cedula:'V-11558392',   tel:'0414-9876543', deuda:45.00,  historial:[] },
+];
+
+const SEED_PROVS = [
+  { id:30001, empresa:'Distribuidora Cemento Tuy', rif:'J-30100001-2', tel:'0239-4561234', deuda:0,      historial:[] },
+  { id:30002, empresa:'Ferresupply C.A.',           rif:'J-40200002-3', tel:'0212-5551234', deuda:350.00, historial:[] },
+];
+
+function cargarSeedSiNecesario() {
+  if (localStorage.getItem(SEED_KEY)) return;
+  if (!DB.get('ferr_productos', null)) DB.set('ferr_productos', SEED_PRODS);
+  if (!DB.get('ferr_clientes',  null)) DB.set('ferr_clientes',  SEED_CLIENTES);
+  if (!DB.get('ferr_proveedores', null)) DB.set('ferr_proveedores', SEED_PROVS);
+  if (!DB.get('ferr_config', null)) DB.set('ferr_config', { nombre:'Mi Ferretería', rif:'', direccion:'', tasaBCV:36.50, alertaStockMin:5 });
+  localStorage.setItem(SEED_KEY, '1');
+}
+
+/* ─────────────────────────────────────────────
+   HELPERS DE FORMATO Y UI
+───────────────────────────────────────────── */
+const fUSD = n => '$' + (parseFloat(n) || 0).toFixed(2);
+const fBS  = n => { const t = getTasa(); return (parseFloat(n)||0)*t > 0 ? ((parseFloat(n)||0)*t).toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2})+' Bs' : '— Bs'; };
+const getTasa = () => (DB.get('ferr_config',{}).tasaBCV) || 0;
+const nowISO  = () => new Date().toISOString();
+const fFecha  = iso => new Date(iso).toLocaleDateString('es-VE',{day:'2-digit',month:'short',year:'numeric'});
+const fFechaHora = iso => new Date(iso).toLocaleString('es-VE',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+const nuevoId = () => Date.now() + Math.floor(Math.random()*1000);
+
+function catBadge(cat) {
+  const c = CATEGORIAS[cat] || CATEGORIAS.general;
+  return `<span class="cat-tag ${c.css}">${c.emoji} ${c.label}</span>`;
+}
+
+function stockBadge(prod) {
+  if (prod.stock <= 0) return `<span class="badge badge-danger">Agotado</span>`;
+  if (prod.stock <= (prod.stockMin || 5)) return `<span class="badge badge-warn">Stock bajo</span>`;
+  return `<span class="badge badge-ok">Óptimo</span>`;
+}
+
+function getProdsLowStock() {
+  return (DB.get('ferr_productos',[]) || []).filter(p => p.stock <= (p.stockMin || 5));
+}
+
+function updateBadges() {
+  const low = getProdsLowStock().length;
+  const invBadge = document.getElementById('badge-inv');
+  if (invBadge) { invBadge.textContent = low; invBadge.classList.toggle('hidden', low === 0); }
+
+  const clientes = DB.get('ferr_clientes',[]);
+  const conDeuda = clientes.filter(c => c.deuda > 0).length;
+  const cliBadge = document.getElementById('badge-cli');
+  if (cliBadge) { cliBadge.textContent = conDeuda; cliBadge.classList.toggle('hidden', conDeuda === 0); }
+}
+
+/* ─────────────────────────────────────────────
+   INIT APP
+───────────────────────────────────────────── */
+function initApp() {
+  cargarSeedSiNecesario();
+  actualizarTopbarTasa();
+  updateBadges();
+  renderDash();
+}
+
+/* ═══════════════════════════════════════════
+   DASHBOARD
+═══════════════════════════════════════════ */
+function renderDash() {
+  const ventas    = DB.get('ferr_ventas', []);
+  const productos = DB.get('ferr_productos', []);
+  const clientes  = DB.get('ferr_clientes', []);
+  const hoy       = new Date().toDateString();
+
+  const ventasHoy  = ventas.filter(v => new Date(v.fecha).toDateString() === hoy);
+  const totalHoy   = ventasHoy.reduce((s,v) => s + v.total, 0);
+  const totalDeuda = clientes.reduce((s,c) => s + (c.deuda||0), 0);
+  const lowStock   = productos.filter(p => p.stock <= (p.stockMin||5));
+  const invValor   = productos.reduce((s,p) => s + p.precioVenta * p.stock, 0);
+
+  // Ventas últimos 7 días para mini-chart
+  const labels7 = []; const data7 = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const ds = d.toDateString();
+    labels7.push(d.toLocaleDateString('es-VE',{weekday:'short'}));
+    data7.push(ventas.filter(v=>new Date(v.fecha).toDateString()===ds).reduce((s,v)=>s+v.total,0));
+  }
+
+  document.getElementById('v-dash').innerHTML = `
+    <div class="page-hdr">
+      <div>
+        <div class="page-hdr-title">📈 Resumen Gerencial</div>
+        <div class="page-hdr-sub">${new Date().toLocaleDateString('es-VE',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="renderDash()"><i class="fas fa-rotate-right"></i> Actualizar</button>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card neon">
+        <div class="stat-icon"><i class="fas fa-cash-register"></i></div>
+        <div class="stat-label">Ventas Hoy</div>
+        <div class="stat-val neon">${fUSD(totalHoy)}</div>
+        <div class="stat-sub">${ventasHoy.length} transacción(es)</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-label">Por Cobrar (Fiados)</div>
+        <div class="stat-val gold">${fUSD(totalDeuda)}</div>
+        <div class="stat-sub">${clientes.filter(c=>c.deuda>0).length} cliente(s) con saldo</div>
+      </div>
+      <div class="stat-card ${lowStock.length > 0 ? 'danger' : 'green'}">
+        <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+        <div class="stat-label">Alertas de Stock</div>
+        <div class="stat-val ${lowStock.length > 0 ? 'danger' : 'green'}">${lowStock.length}</div>
+        <div class="stat-sub">producto(s) en stock bajo o agotado</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon"><i class="fas fa-boxes-stacked"></i></div>
+        <div class="stat-label">Valor del Inventario</div>
+        <div class="stat-val purple">${fUSD(invValor)}</div>
+        <div class="stat-sub">${productos.length} producto(s) activos</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="gap:18px;margin-bottom:18px">
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title"><i class="fas fa-chart-area"></i> Tendencia Semanal (USD)</div>
+        </div>
+        <div class="card-body" style="height:220px">
+          <canvas id="chartDash"></canvas>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title"><i class="fas fa-triangle-exclamation" style="color:var(--danger)"></i> Stock Crítico</div>
+          <button class="btn btn-ghost btn-xs" onclick="nav('inventario',document.querySelector('[data-view=inventario]'))">Ver todos</button>
+        </div>
+        <div class="card-body" style="max-height:220px;overflow-y:auto">
+          ${lowStock.length === 0
+            ? `<div class="empty-state" style="padding:30px"><div class="empty-icon">✅</div><div class="empty-title">Todo el stock en niveles óptimos</div></div>`
+            : lowStock.map(p=>`
+              <div class="stock-alert-row">
+                <div>
+                  <div class="stock-alert-name">${p.nombre}</div>
+                  <div style="font-size:10px;color:var(--text3)">${p.codigo} · Min: ${p.stockMin} ${p.unidad}</div>
+                </div>
+                <div class="stock-alert-qty">${p.stock} ${p.unidad}</div>
+                ${stockBadge(p)}
+              </div>`).join('')
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><i class="fas fa-receipt"></i> Últimas Ventas</div>
+        <button class="btn btn-ghost btn-xs" onclick="nav('ventas',document.querySelector('[data-view=ventas]'))">Ir al POS</button>
+      </div>
+      <div class="table-wrap">
+        ${ventas.length === 0
+          ? `<div class="empty-state"><div class="empty-icon">🧾</div><div class="empty-title">Sin ventas registradas aún</div></div>`
+          : `<table>
+              <thead><tr><th>#</th><th>Fecha</th><th>Items</th><th>Método</th><th>Total USD</th><th>Total Bs</th></tr></thead>
+              <tbody>${ventas.slice(0,10).map(v=>`
+                <tr>
+                  <td class="mono" style="color:var(--text3);font-size:11px">#${String(v.id).slice(-5)}</td>
+                  <td>${fFechaHora(v.fecha)}</td>
+                  <td style="color:var(--text2)">${v.items.length} ítem(s)</td>
+                  <td>${metodoBadge(v.metodoPago)}</td>
+                  <td class="mono" style="color:var(--neon);font-weight:700">${fUSD(v.total)}</td>
+                  <td class="mono" style="color:var(--gold)">${fBS(v.total)}</td>
+                </tr>`).join('')}
+              </tbody>
+            </table>`
+        }
+      </div>
+    </div>
+  `;
+
+  // Chart tendencia
+  requestAnimationFrame(() => {
+    const ctx = document.getElementById('chartDash');
+    if (!ctx) return;
+    if (window._chartDash) window._chartDash.destroy();
+    window._chartDash = new Chart(ctx, {
+      type:'line',
+      data:{ labels:labels7, datasets:[{ label:'Ventas $', data:data7, borderColor:'#00d2ff', backgroundColor:'rgba(0,210,255,0.08)', tension:0.4, pointBackgroundColor:'#00d2ff', pointRadius:4, fill:true }] },
+      options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false} }, scales:{ x:{ticks:{color:'#7a90b0',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}}, y:{ticks:{color:'#7a90b0',font:{size:10},callback:v=>'$'+v},grid:{color:'rgba(255,255,255,0.04)'}} } }
+    });
+  });
+}
+
+function metodoBadge(m) {
+  const map = { 'Efectivo $':'badge-neon','Zelle':'badge-green','Pago Móvil Bs':'badge-gold','Transferencia Bs':'badge-gold','Fiado':'badge-danger' };
+  return `<span class="badge ${map[m]||'badge-neon'}">${m||'—'}</span>`;
+}
+
+/* ═══════════════════════════════════════════
+   POS / VENTAS
+═══════════════════════════════════════════ */
+let CART = [];
+let CAT_FILTRO = 'todos';
+let BUSQ_POS = '';
+
+function renderVentas() {
+  document.getElementById('v-ventas').innerHTML = `
+    <div class="pos-layout">
+      <!-- PRODUCTOS -->
+      <div class="pos-products">
+        <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+          <div class="search-bar" style="flex:1;min-width:180px">
+            <i class="fas fa-magnifying-glass"></i>
+            <input id="posBusq" placeholder="Buscar producto…" oninput="BUSQ_POS=this.value;renderProdGrid()" autocomplete="off">
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+          <button class="btn btn-sm ${CAT_FILTRO==='todos'?'btn-neon':'btn-ghost'}" onclick="CAT_FILTRO='todos';renderProdGrid()">Todos</button>
+          ${Object.entries(CATEGORIAS).map(([k,v])=>`<button class="btn btn-sm ${CAT_FILTRO===k?'btn-neon':'btn-ghost'}" onclick="CAT_FILTRO='${k}';renderProdGrid()">${v.emoji} ${v.label}</button>`).join('')}
+        </div>
+        <div class="prod-grid" id="prodGrid"></div>
+      </div>
+
+      <!-- CARRITO -->
+      <div class="pos-cart">
+        <div class="cart-head">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-weight:800;font-size:13px">🛒 FACTURACIÓN</div>
+            <button class="btn btn-ghost btn-xs" onclick="limpiarCart()">Limpiar</button>
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:3px" id="cartCount">0 ítem(s)</div>
+        </div>
+        <div class="cart-items" id="cartItems">
+          <div class="empty-state" style="padding:30px">
+            <div class="empty-icon">🛒</div>
+            <div class="empty-title">Selecciona productos</div>
+          </div>
+        </div>
+        <div class="cart-footer">
+          <div style="margin-bottom:8px">
+            <div style="font-size:9px;color:var(--text3);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px">TOTAL USD</div>
+            <div class="cart-total-usd" id="cartTotalUSD">$0.00</div>
+            <div class="cart-total-bs" id="cartTotalBS">— Bs</div>
+          </div>
+          <div style="font-size:9px;color:var(--text3);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px">MÉTODO DE PAGO</div>
+          <div class="pay-btns" id="payBtns">
+            ${METODOS.map(m=>`<button class="pay-btn" onclick="selMetodo(this,'${m}')">${m}</button>`).join('')}
+          </div>
+          <button class="btn btn-neon" id="btnCobrar" onclick="procesarVenta()" style="width:100%;justify-content:center;padding:14px;font-size:14px;margin-top:6px">
+            <i class="fas fa-check-circle"></i> COBRAR
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  renderProdGrid();
+  renderCart();
+}
+
+function renderProdGrid() {
+  const prods = (DB.get('ferr_productos',[]) || []).filter(p => {
+    const matchCat  = CAT_FILTRO === 'todos' || p.categoria === CAT_FILTRO;
+    const matchBusq = !BUSQ_POS || p.nombre.toLowerCase().includes(BUSQ_POS.toLowerCase()) || p.codigo.toLowerCase().includes(BUSQ_POS.toLowerCase());
+    return matchCat && matchBusq;
+  });
+  const grid = document.getElementById('prodGrid');
+  if (!grid) return;
+  if (prods.length === 0) { grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📦</div><div class="empty-title">Sin productos</div></div>`; return; }
+  const cat = CATEGORIAS;
+  grid.innerHTML = prods.map(p => `
+    <div class="prod-card ${p.stock<=0?'agotado':''}" onclick="${p.stock>0?`addToCart(${p.id})`:'toast(\'Sin stock\',\'err\')'}">
+      <div class="prod-card-emoji">${(cat[p.categoria]||cat.general).emoji}</div>
+      <div class="prod-card-name">${p.nombre}</div>
+      <div class="prod-card-price">${fUSD(p.precioVenta)}</div>
+      <div class="prod-card-stock">${p.stock} ${p.unidad} disp.</div>
+      ${p.stock<=0?'<div style="font-size:9px;color:var(--danger);font-weight:800;margin-top:3px">AGOTADO</div>':''}
+    </div>
+  `).join('');
+}
+
+function addToCart(prodId) {
+  const prod = (DB.get('ferr_productos',[]) || []).find(p => p.id === prodId);
+  if (!prod || prod.stock <= 0) { toast('Sin stock disponible','err'); return; }
+  const existing = CART.find(c => c.id === prodId);
+  const enCart = existing ? existing.qty : 0;
+  if (enCart >= prod.stock) { toast(`Máximo disponible: ${prod.stock} ${prod.unidad}`,'warn'); return; }
+  if (existing) existing.qty++;
+  else CART.push({ id:prodId, nombre:prod.nombre, precio:prod.precioVenta, unidad:prod.unidad, qty:1 });
+  renderCart();
+}
+
+function removeFromCart(prodId) {
+  CART = CART.filter(c => c.id !== prodId);
+  renderCart();
+}
+
+function updateQty(prodId, delta) {
+  const prod = (DB.get('ferr_productos',[]) || []).find(p => p.id === prodId);
+  const item = CART.find(c => c.id === prodId);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) { removeFromCart(prodId); return; }
+  if (prod && item.qty > prod.stock) { item.qty = prod.stock; toast(`Máximo: ${prod.stock} ${prod.unidad}`,'warn'); }
+  renderCart();
+}
+
+function renderCart() {
+  const items = document.getElementById('cartItems');
+  const count = document.getElementById('cartCount');
+  const usd   = document.getElementById('cartTotalUSD');
+  const bs    = document.getElementById('cartTotalBS');
+  if (!items) return;
+
+  const total = CART.reduce((s,c) => s + c.qty*c.precio, 0);
+  if (count) count.textContent = `${CART.length} ítem(s) · ${CART.reduce((s,c)=>s+c.qty,0)} unidades`;
+  if (usd) usd.textContent = fUSD(total);
+  if (bs) { const t=getTasa(); bs.textContent = t>0 ? (total*t).toFixed(2)+' Bs' : '— Bs'; }
+
+  if (CART.length === 0) {
+    items.innerHTML = `<div class="empty-state" style="padding:30px"><div class="empty-icon">🛒</div><div class="empty-title">Selecciona productos</div></div>`;
+    return;
+  }
+  items.innerHTML = CART.map(c => `
+    <div class="cart-item">
+      <div style="flex:1;min-width:0">
+        <div class="cart-item-name">${c.nombre}</div>
+        <div class="cart-item-unit">${fUSD(c.precio)} × ${c.qty}</div>
+      </div>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="updateQty(${c.id},-1)">−</button>
+        <span class="qty-num">${c.qty}</span>
+        <button class="qty-btn" onclick="updateQty(${c.id},1)">+</button>
+      </div>
+      <div class="cart-item-price">${fUSD(c.qty*c.precio)}</div>
+      <button class="remove-btn" onclick="removeFromCart(${c.id})"><i class="fas fa-xmark"></i></button>
+    </div>
+  `).join('');
+}
+
+let METODO_SEL = 'Efectivo $';
+function selMetodo(btn, metodo) {
+  METODO_SEL = metodo;
+  document.querySelectorAll('.pay-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+function limpiarCart() { CART = []; renderCart(); }
+
+function procesarVenta() {
+  if (CART.length === 0) { toast('El carrito está vacío','warn'); return; }
+  const total = CART.reduce((s,c) => s + c.qty*c.precio, 0);
+  if (!confirm(`Confirmar venta:\n${CART.map(c=>`• ${c.nombre} x${c.qty} = ${fUSD(c.qty*c.precio)}`).join('\n')}\n\nTotal: ${fUSD(total)}\nMétodo: ${METODO_SEL}`)) return;
+
+  // Descontar stock
+  const productos = DB.get('ferr_productos',[]) || [];
+  CART.forEach(item => {
+    const prod = productos.find(p => p.id === item.id);
+    if (prod) prod.stock = Math.max(0, prod.stock - item.qty);
+  });
+  DB.set('ferr_productos', productos);
+
+  // Registrar en fiado si corresponde
+  if (METODO_SEL === 'Fiado') {
+    const nomCliente = prompt('Nombre del cliente (para el fiado):');
+    if (nomCliente) {
+      const clientes = DB.get('ferr_clientes',[]) || [];
+      const cl = clientes.find(c => c.nombre.toLowerCase() === nomCliente.toLowerCase());
+      if (cl) {
+        cl.deuda += total;
+        cl.historial.unshift({ fecha:nowISO(), concepto:`Venta #${nuevoId().toString().slice(-5)}`, monto:total, tipo:'cargo' });
+        DB.set('ferr_clientes', clientes);
+      } else {
+        toast('Cliente no encontrado. Regístralo en la sección Clientes','warn');
+      }
+    }
+  }
+
+  // Guardar venta
+  const venta = { id:nuevoId(), fecha:nowISO(), items:CART.map(c=>({...c})), total, totalBS:total*getTasa(), metodoPago:METODO_SEL };
+  DB.push('ferr_ventas', venta);
+
+  // Movimiento de caja
+  const caja = DB.get('ferr_caja',{});
+  if (caja.estado === 'abierta') {
+    if (!caja.movimientos) caja.movimientos = [];
+    caja.movimientos.push({ id:nuevoId(), tipo:'ingreso', monto:total, concepto:`Venta #${String(venta.id).slice(-5)}`, metodo:METODO_SEL, fecha:nowISO() });
+    DB.set('ferr_caja', caja);
+  }
+
+  toast(`Venta registrada: ${fUSD(total)}`, 'ok');
+  CART = [];
+  updateBadges();
+  renderVentas();
+}
+
+/* ═══════════════════════════════════════════
+   INVENTARIO
+═══════════════════════════════════════════ */
+let INV_FILTRO_CAT = 'todos';
+let INV_BUSQ = '';
+
+function renderInventario() {
+  const lowStock = getProdsLowStock();
+  document.getElementById('v-inventario').innerHTML = `
+    <div class="page-hdr">
+      <div>
+        <div class="page-hdr-title">📦 Gestión de Inventario</div>
+        <div class="page-hdr-sub">Productos · Stock · Alertas · Movimientos</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="abrirMovimientoManual()"><i class="fas fa-arrows-up-down"></i> Movimiento</button>
+        <button class="btn btn-neon btn-sm" onclick="abrirModalProducto(null)"><i class="fas fa-plus"></i> Nuevo Producto</button>
+      </div>
+    </div>
+
+    ${lowStock.length > 0 ? `
+    <div style="background:rgba(255,71,87,0.06);border:1px solid rgba(255,71,87,0.2);border-radius:12px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:20px">⚠️</span>
+        <div>
+          <div style="font-weight:800;color:var(--danger);font-size:13px">${lowStock.length} producto(s) con stock crítico</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">${lowStock.map(p=>p.nombre).slice(0,3).join(' · ')}${lowStock.length>3?' · …':''}</div>
+        </div>
+      </div>
+      <span class="badge badge-danger">Requiere atención</span>
+    </div>` : ''}
+
+    <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <div class="search-bar" style="flex:1;min-width:200px">
+        <i class="fas fa-magnifying-glass"></i>
+        <input id="invBusq" placeholder="Buscar por nombre o código…" oninput="INV_BUSQ=this.value;renderInvTabla()" autocomplete="off">
+      </div>
+      <select class="inp" style="width:auto;min-width:160px" onchange="INV_FILTRO_CAT=this.value;renderInvTabla()">
+        <option value="todos">Todas las categorías</option>
+        ${Object.entries(CATEGORIAS).map(([k,v])=>`<option value="${k}" ${INV_FILTRO_CAT===k?'selected':''}>${v.emoji} ${v.label}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap" id="invTablaWrap"></div>
+    </div>
+  `;
+  renderInvTabla();
+}
+
+function renderInvTabla() {
+  let prods = DB.get('ferr_productos',[]) || [];
+  if (INV_FILTRO_CAT !== 'todos') prods = prods.filter(p => p.categoria === INV_FILTRO_CAT);
+  if (INV_BUSQ) prods = prods.filter(p => p.nombre.toLowerCase().includes(INV_BUSQ.toLowerCase()) || p.codigo.toLowerCase().includes(INV_BUSQ.toLowerCase()));
+
+  const wrap = document.getElementById('invTablaWrap');
+  if (!wrap) return;
+
+  if (prods.length === 0) { wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">📦</div><div class="empty-title">Sin productos</div><div class="empty-sub">Agrega tu primer producto</div></div>`; return; }
+
+  wrap.innerHTML = `
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th><th>Producto</th><th>Categoría</th><th>Unidad</th>
+          <th>P.Costo</th><th>P.Venta</th><th>Stock</th><th>Mín</th><th>Estado</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${prods.map(p=>`
+          <tr>
+            <td class="mono" style="font-size:11px;color:var(--text3)">${p.codigo}</td>
+            <td style="font-weight:700;color:var(--text)">${p.nombre}</td>
+            <td>${catBadge(p.categoria)}</td>
+            <td style="color:var(--text3)">${p.unidad}</td>
+            <td class="mono" style="color:var(--text2)">${fUSD(p.precioCosto)}</td>
+            <td class="mono" style="color:var(--neon);font-weight:700">${fUSD(p.precioVenta)}</td>
+            <td class="mono" style="font-weight:800;color:${p.stock<=0?'var(--danger)':p.stock<=(p.stockMin||5)?'var(--warn)':'var(--green)'}">${p.stock}</td>
+            <td class="mono" style="color:var(--text3)">${p.stockMin||5}</td>
+            <td>${stockBadge(p)}</td>
+            <td>
+              <div style="display:flex;gap:5px">
+                <button class="btn btn-ghost btn-xs" onclick="abrirModalProducto(${p.id})"><i class="fas fa-pen"></i></button>
+                <button class="btn btn-ghost btn-xs" style="color:var(--danger)" onclick="eliminarProducto(${p.id})"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>`).join('')}
+      </tbody>
+    </table>
+  `;
+}
+
+function abrirModalProducto(id) {
+  const prods = DB.get('ferr_productos',[]) || [];
+  const p     = id ? prods.find(x => x.id === id) : null;
+  const nuevoId_ = 'FERR-' + String((prods.length+1)).padStart(3,'0');
+
+  const html = `
+    <div class="modal-overlay open" id="modalProd" onclick="if(event.target===this)cerrarModal('modalProd')">
+      <div class="modal">
+        <div class="modal-head">
+          <div class="modal-title">${p?'✏️ Editar Producto':'➕ Nuevo Producto'}</div>
+          <button class="modal-close" onclick="cerrarModal('modalProd')">✕</button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="mpId" value="${p?.id||''}">
+          <div class="inp-row col2" style="margin-bottom:14px">
+            <div class="input-group" style="margin:0">
+              <label class="input-label">Código</label>
+              <input class="inp" id="mpCodigo" value="${p?.codigo||nuevoId_}" placeholder="FERR-001">
+            </div>
+            <div class="input-group" style="margin:0">
+              <label class="input-label">Categoría</label>
+              <select class="inp" id="mpCat">
+                ${Object.entries(CATEGORIAS).map(([k,v])=>`<option value="${k}" ${p?.categoria===k?'selected':''}>${v.emoji} ${v.label}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Nombre del Producto</label>
+            <input class="inp" id="mpNombre" value="${p?.nombre||''}" placeholder="Ej: Saco de Cemento 42.5 kg">
+          </div>
+          <div class="inp-row col3" style="margin-bottom:14px">
+            <div class="input-group" style="margin:0">
+              <label class="input-label">Unidad</label>
+              <select class="inp" id="mpUnidad">
+                ${UNIDADES.map(u=>`<option ${p?.unidad===u?'selected':''}>${u}</option>`).join('')}
+              </select>
+            </div>
+            <div class="input-group" style="margin:0">
+              <label class="input-label">Stock Actual</label>
+              <input class="inp" id="mpStock" type="number" value="${p?.stock||0}" min="0">
+            </div>
+            <div class="input-group" style="margin:0">
+              <label class="input-label">Stock Mínimo</label>
+              <input class="inp" id="mpStockMin" type="number" value="${p?.stockMin||5}" min="0">
+            </div>
+          </div>
+          <div class="inp-row col2">
+            <div class="input-group" style="margin:0">
+              <label class="input-label">Precio Costo (USD)</label>
+              <input class="inp" id="mpCosto" type="number" value="${p?.precioCosto||''}" step="0.01" min="0" placeholder="0.00">
+            </div>
+            <div class="input-group" style="margin:0">
+              <label class="input-label">Precio Venta (USD)</label>
+              <input class="inp" id="mpVenta" type="number" value="${p?.precioVenta||''}" step="0.01" min="0" placeholder="0.00">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="cerrarModal('modalProd')">Cancelar</button>
+          <button class="btn btn-neon" onclick="guardarProducto()"><i class="fas fa-floppy-disk"></i> Guardar</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function guardarProducto() {
+  const id      = document.getElementById('mpId').value;
+  const codigo  = document.getElementById('mpCodigo').value.trim().toUpperCase();
+  const nombre  = document.getElementById('mpNombre').value.trim();
+  const cat     = document.getElementById('mpCat').value;
+  const unidad  = document.getElementById('mpUnidad').value;
+  const stock   = parseInt(document.getElementById('mpStock').value) || 0;
+  const stockMin= parseInt(document.getElementById('mpStockMin').value) || 5;
+  const costo   = parseFloat(document.getElementById('mpCosto').value) || 0;
+  const venta   = parseFloat(document.getElementById('mpVenta').value) || 0;
+
+  if (!nombre || venta <= 0) { toast('Nombre y precio de venta son obligatorios','err'); return; }
+
+  let prods = DB.get('ferr_productos',[]) || [];
+  if (id) {
+    prods = prods.map(p => p.id === parseInt(id) ? {...p, codigo, nombre, categoria:cat, unidad, stock, stockMin, precioCosto:costo, precioVenta:venta} : p);
+    toast('Producto actualizado','ok');
+  } else {
+    prods.unshift({ id:nuevoId(), codigo, nombre, categoria:cat, unidad, stock, stockMin, precioCosto:costo, precioVenta:venta });
+    toast('Producto agregado','ok');
+  }
+  DB.set('ferr_productos', prods);
+  cerrarModal('modalProd');
+  updateBadges();
+  renderInventario();
+}
+
+function eliminarProducto(id) {
+  const prods = DB.get('ferr_productos',[]) || [];
+  const prod  = prods.find(p => p.id === id);
+  if (!prod) return;
+  if (!confirm(`¿Eliminar "${prod.nombre}"?\nEsta acción no se puede deshacer.`)) return;
+  DB.set('ferr_productos', prods.filter(p => p.id !== id));
+  toast('Producto eliminado','warn');
+  updateBadges();
+  renderInventario();
+}
+
+function abrirMovimientoManual() {
+  const prods = DB.get('ferr_productos',[]) || [];
+  const html = `
+    <div class="modal-overlay open" id="modalMov" onclick="if(event.target===this)cerrarModal('modalMov')">
+      <div class="modal">
+        <div class="modal-head"><div class="modal-title">📦 Registrar Movimiento</div><button class="modal-close" onclick="cerrarModal('modalMov')">✕</button></div>
+        <div class="modal-body">
+          <div class="input-group">
+            <label class="input-label">Producto</label>
+            <select class="inp" id="movProd">
+              ${prods.map(p=>`<option value="${p.id}">${p.codigo} — ${p.nombre} (Stock: ${p.stock})</option>`).join('')}
+            </select>
+          </div>
+          <div class="inp-row col2">
+            <div class="input-group" style="margin:0">
+              <label class="input-label">Tipo</label>
+              <select class="inp" id="movTipo">
+                <option value="entrada">Entrada (compra/recepción)</option>
+                <option value="salida">Salida (ajuste/merma)</option>
+              </select>
+            </div>
+            <div class="input-group" style="margin:0">
+              <label class="input-label">Cantidad</label>
+              <input class="inp" id="movQty" type="number" value="1" min="1">
+            </div>
+          </div>
+          <div class="input-group">
+            <label class="input-label">Nota (opcional)</label>
+            <input class="inp" id="movNota" placeholder="Ej: Compra a proveedor Distribuidora Tuy">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="cerrarModal('modalMov')">Cancelar</button>
+          <button class="btn btn-neon" onclick="guardarMovimiento()"><i class="fas fa-check"></i> Registrar</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function guardarMovimiento() {
+  const prodId = parseInt(document.getElementById('movProd').value);
+  const tipo   = document.getElementById('movTipo').value;
+  const qty    = parseInt(document.getElementById('movQty').value) || 0;
+  const nota   = document.getElementById('movNota').value.trim();
+  if (qty <= 0) { toast('Cantidad inválida','err'); return; }
+
+  const prods = DB.get('ferr_productos',[]) || [];
+  const prod  = prods.find(p => p.id === prodId);
+  if (!prod) return;
+
+  if (tipo === 'entrada') prod.stock += qty;
+  else { if (qty > prod.stock) { toast(`Stock insuficiente (disponible: ${prod.stock})`,'err'); return; } prod.stock -= qty; }
+
+  DB.set('ferr_productos', prods);
+  DB.push('ferr_movimientos', { id:nuevoId(), prodId, prodNombre:prod.nombre, tipo, qty, nota, fecha:nowISO() });
+  toast(`Movimiento registrado: ${tipo} de ${qty} ${prod.unidad}`,'ok');
+  cerrarModal('modalMov');
+  updateBadges();
+  renderInventario();
+}
+
+/* ═══════════════════════════════════════════
+   CLIENTES / FIADOS
+═══════════════════════════════════════════ */
+function renderClientes() {
+  const clientes = DB.get('ferr_clientes',[]) || [];
+  const totalDeuda = clientes.reduce((s,c)=>s+(c.deuda||0),0);
+  document.getElementById('v-clientes').innerHTML = `
+    <div class="page-hdr">
+      <div>
+        <div class="page-hdr-title">👥 Clientes y Cuentas por Cobrar</div>
+        <div class="page-hdr-sub">Total por cobrar: <b style="color:var(--gold)">${fUSD(totalDeuda)}</b> · ${clientes.filter(c=>c.deuda>0).length} cliente(s) con saldo pendiente</div>
+      </div>
+      <button class="btn btn-neon btn-sm" onclick="abrirModalCliente(null)"><i class="fas fa-user-plus"></i> Nuevo Cliente</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        ${clientes.length === 0
+          ? `<div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">Sin clientes registrados</div></div>`
+          : `<table>
+              <thead><tr><th>Nombre</th><th>Cédula/RIF</th><th>Teléfono</th><th>Deuda USD</th><th>Deuda Bs</th><th>Acciones</th></tr></thead>
+              <tbody>${clientes.map(c=>`
+                <tr>
+                  <td style="font-weight:700;color:var(--text)">${c.nombre}</td>
+                  <td style="color:var(--text3)">${c.cedula||'—'}</td>
+                  <td style="color:var(--text3)">${c.tel||'—'}</td>
+                  <td class="mono" style="font-weight:800;color:${c.deuda>0?'var(--danger)':'var(--green)'}">${fUSD(c.deuda||0)}</td>
+                  <td class="mono" style="color:var(--gold)">${fBS(c.deuda||0)}</td>
+                  <td>
+                    <div style="display:flex;gap:5px">
+                      ${c.deuda>0?`<button class="btn btn-green btn-xs" onclick="abonarCliente(${c.id})"><i class="fas fa-hand-holding-dollar"></i> Abonar</button>`:''}
+                      <button class="btn btn-ghost btn-xs" onclick="verHistorialCliente(${c.id})"><i class="fas fa-clock-rotate-left"></i></button>
+                      <button class="btn btn-ghost btn-xs" onclick="abrirModalCliente(${c.id})"><i class="fas fa-pen"></i></button>
+                      <button class="btn btn-ghost btn-xs" style="color:var(--danger)" onclick="eliminarCliente(${c.id})"><i class="fas fa-trash"></i></button>
+                    </div>
+                  </td>
+                </tr>`).join('')}
+              </tbody>
+            </table>`
+        }
+      </div>
+    </div>
+  `;
+}
+
+function abrirModalCliente(id) {
+  const clientes = DB.get('ferr_clientes',[]) || [];
+  const c = id ? clientes.find(x=>x.id===id) : null;
+  const html = `
+    <div class="modal-overlay open" id="modalCli" onclick="if(event.target===this)cerrarModal('modalCli')">
+      <div class="modal">
+        <div class="modal-head"><div class="modal-title">${c?'✏️ Editar Cliente':'👤 Nuevo Cliente'}</div><button class="modal-close" onclick="cerrarModal('modalCli')">✕</button></div>
+        <div class="modal-body">
+          <input type="hidden" id="cliId" value="${c?.id||''}">
+          <div class="input-group"><label class="input-label">Nombre / Empresa</label><input class="inp" id="cliNombre" value="${c?.nombre||''}" placeholder="Ej: Constructora Tuy C.A."></div>
+          <div class="inp-row col2">
+            <div class="input-group" style="margin:0"><label class="input-label">Cédula / RIF</label><input class="inp" id="cliCedula" value="${c?.cedula||''}" placeholder="V-12345678"></div>
+            <div class="input-group" style="margin:0"><label class="input-label">Teléfono</label><input class="inp" id="cliTel" value="${c?.tel||''}" placeholder="0412-0000000"></div>
+          </div>
+          ${!c?`<div class="input-group"><label class="input-label">Deuda Inicial (USD)</label><input class="inp" id="cliDeuda" type="number" value="0" step="0.01" min="0"></div>`:''}
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="cerrarModal('modalCli')">Cancelar</button>
+          <button class="btn btn-neon" onclick="guardarCliente()"><i class="fas fa-floppy-disk"></i> Guardar</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function guardarCliente() {
+  const id     = document.getElementById('cliId').value;
+  const nombre = document.getElementById('cliNombre').value.trim();
+  const cedula = document.getElementById('cliCedula').value.trim();
+  const tel    = document.getElementById('cliTel').value.trim();
+  if (!nombre) { toast('El nombre es obligatorio','err'); return; }
+  let clientes = DB.get('ferr_clientes',[]) || [];
+  if (id) {
+    clientes = clientes.map(c => c.id===parseInt(id) ? {...c,nombre,cedula,tel} : c);
+    toast('Cliente actualizado','ok');
+  } else {
+    const deuda = parseFloat(document.getElementById('cliDeuda')?.value) || 0;
+    clientes.unshift({ id:nuevoId(), nombre, cedula, tel, deuda, historial: deuda>0?[{fecha:nowISO(),concepto:'Saldo inicial',monto:deuda,tipo:'cargo'}]:[] });
+    toast('Cliente registrado','ok');
+  }
+  DB.set('ferr_clientes', clientes);
+  cerrarModal('modalCli');
+  updateBadges();
+  renderClientes();
+}
+
+function abonarCliente(id) {
+  const clientes = DB.get('ferr_clientes',[]) || [];
+  const c = clientes.find(x=>x.id===id);
+  if (!c) return;
+  const monto = parseFloat(prompt(`Abono de ${c.nombre}\nDeuda actual: ${fUSD(c.deuda)}\n\nMonto a abonar (USD):`));
+  if (isNaN(monto) || monto <= 0) return;
+  if (monto > c.deuda) { toast('El abono supera la deuda actual','warn'); return; }
+  c.deuda = Math.max(0, c.deuda - monto);
+  c.historial.unshift({ fecha:nowISO(), concepto:'Abono', monto, tipo:'abono' });
+  DB.set('ferr_clientes', clientes);
+  toast(`Abono registrado: ${fUSD(monto)}. Saldo pendiente: ${fUSD(c.deuda)}`,'ok');
+  updateBadges();
+  renderClientes();
+}
+
+function verHistorialCliente(id) {
+  const c = (DB.get('ferr_clientes',[]) || []).find(x=>x.id===id);
+  if (!c) return;
+  const html = `
+    <div class="modal-overlay open" id="modalHistCli" onclick="if(event.target===this)cerrarModal('modalHistCli')">
+      <div class="modal modal-lg">
+        <div class="modal-head"><div class="modal-title">📋 Historial — ${c.nombre}</div><button class="modal-close" onclick="cerrarModal('modalHistCli')">✕</button></div>
+        <div class="modal-body">
+          <div style="margin-bottom:12px;display:flex;gap:10px">
+            <span class="badge badge-danger">Deuda: ${fUSD(c.deuda)}</span>
+            <span class="badge badge-gold">Equivale: ${fBS(c.deuda)}</span>
+          </div>
+          ${c.historial.length===0?'<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">Sin movimientos</div></div>'
+            :`<table><thead><tr><th>Fecha</th><th>Concepto</th><th>Monto</th><th>Tipo</th></tr></thead><tbody>
+              ${c.historial.map(h=>`<tr>
+                <td>${fFechaHora(h.fecha)}</td>
+                <td>${h.concepto}</td>
+                <td class="mono" style="color:${h.tipo==='abono'?'var(--green)':'var(--danger)'}">
+                  ${h.tipo==='abono'?'-':'+'} ${fUSD(h.monto)}
+                </td>
+                <td><span class="badge ${h.tipo==='abono'?'badge-ok':'badge-danger'}">${h.tipo==='abono'?'Abono':'Cargo'}</span></td>
+              </tr>`).join('')}
+              </tbody></table>`}
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function eliminarCliente(id) {
+  if (!confirm('¿Eliminar este cliente? Se perderá su historial.')) return;
+  DB.set('ferr_clientes', (DB.get('ferr_clientes',[]) || []).filter(c=>c.id!==id));
+  toast('Cliente eliminado','warn');
+  updateBadges();
+  renderClientes();
+}
+
+/* ═══════════════════════════════════════════
+   CAJA
+═══════════════════════════════════════════ */
+function renderCaja() {
+  const caja  = DB.get('ferr_caja', { estado:'cerrada', movimientos:[] });
+  const movs  = caja.movimientos || [];
+  const ingresos = movs.filter(m=>m.tipo==='ingreso').reduce((s,m)=>s+m.monto,0);
+  const egresos  = movs.filter(m=>m.tipo==='egreso').reduce((s,m)=>s+m.monto,0);
+  const saldo    = (caja.montoInicial||0) + ingresos - egresos;
+
+  document.getElementById('v-caja').innerHTML = `
+    <div class="page-hdr">
+      <div>
+        <div class="page-hdr-title">💰 Gestión de Caja</div>
+        <div class="page-hdr-sub">Estado: <b style="color:${caja.estado==='abierta'?'var(--green)':'var(--danger)'}">${caja.estado==='abierta'?'CAJA ABIERTA':'CAJA CERRADA'}</b>
+          ${caja.estado==='abierta'?` · Desde: ${fFechaHora(caja.fechaApertura)}`:''}
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        ${caja.estado==='cerrada'
+          ? `<button class="btn btn-green" onclick="abrirCaja()"><i class="fas fa-door-open"></i> Abrir Caja</button>`
+          : `<button class="btn btn-ghost btn-sm" onclick="agregarEgreso()"><i class="fas fa-minus-circle"></i> Egreso</button>
+             <button class="btn btn-danger" onclick="cerrarCaja()"><i class="fas fa-calculator"></i> Cierre / Arqueo</button>`}
+      </div>
+    </div>
+
+    <div class="stat-grid" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stat-card ${caja.estado==='abierta'?'green':'danger'}">
+        <div class="stat-label">Monto Inicial</div>
+        <div class="stat-val ${caja.estado==='abierta'?'green':'danger'}">${fUSD(caja.montoInicial||0)}</div>
+      </div>
+      <div class="stat-card neon">
+        <div class="stat-label">Ingresos del Turno</div>
+        <div class="stat-val neon">${fUSD(ingresos)}</div>
+      </div>
+      <div class="stat-card danger">
+        <div class="stat-label">Egresos del Turno</div>
+        <div class="stat-val danger">${fUSD(egresos)}</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-label">Saldo Actual (USD)</div>
+        <div class="stat-val gold">${fUSD(saldo)}</div>
+        <div class="stat-sub">${fBS(saldo)}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title"><i class="fas fa-list-ul"></i> Movimientos del Turno</div>
+        <span class="badge badge-neon">${movs.length} mov.</span>
+      </div>
+      <div class="table-wrap">
+        ${movs.length===0
+          ? `<div class="empty-state"><div class="empty-icon">💸</div><div class="empty-title">${caja.estado==='cerrada'?'Abre la caja para comenzar':'Sin movimientos aún'}</div></div>`
+          : `<table>
+              <thead><tr><th>Hora</th><th>Concepto</th><th>Método</th><th>Tipo</th><th>Monto</th></tr></thead>
+              <tbody>${[...movs].reverse().map(m=>`
+                <tr>
+                  <td class="mono" style="font-size:11px;color:var(--text3)">${fFechaHora(m.fecha)}</td>
+                  <td>${m.concepto}</td>
+                  <td>${m.metodo||'—'}</td>
+                  <td><span class="badge ${m.tipo==='ingreso'?'badge-ok':'badge-danger'}">${m.tipo==='ingreso'?'Ingreso':'Egreso'}</span></td>
+                  <td class="mono" style="font-weight:800;color:${m.tipo==='ingreso'?'var(--green)':'var(--danger)'}">${m.tipo==='ingreso'?'+':'-'} ${fUSD(m.monto)}</td>
+                </tr>`).join('')}
+              </tbody>
+            </table>`
+        }
+      </div>
+    </div>
+  `;
+}
+
+function abrirCaja() {
+  const monto = parseFloat(prompt('APERTURA DE CAJA\n\nMonto inicial en efectivo (USD):','0'));
+  if (isNaN(monto) || monto < 0) return;
+  DB.set('ferr_caja', { estado:'abierta', fechaApertura:nowISO(), montoInicial:monto, movimientos:[] });
+  toast(`Caja abierta con ${fUSD(monto)}`,'ok');
+  renderCaja();
+}
+
+function cerrarCaja() {
+  const caja = DB.get('ferr_caja',{});
+  const movs = caja.movimientos || [];
+  const ingresos = movs.filter(m=>m.tipo==='ingreso').reduce((s,m)=>s+m.monto,0);
+  const egresos  = movs.filter(m=>m.tipo==='egreso').reduce((s,m)=>s+m.monto,0);
+  const saldo    = (caja.montoInicial||0) + ingresos - egresos;
+  const ventas   = movs.filter(m=>m.tipo==='ingreso').length;
+  if (!confirm(`ARQUEO DE CAJA\n\nMonto inicial: ${fUSD(caja.montoInicial||0)}\nIngresos: ${fUSD(ingresos)}\nEgresos: ${fUSD(egresos)}\nSaldo final: ${fUSD(saldo)}\nVentas: ${ventas}\n\n¿Confirmar cierre?`)) return;
+  const historial = DB.get('ferr_caja_historial',[]) || [];
+  historial.unshift({ ...caja, fechaCierre:nowISO(), ingresos, egresos, saldoFinal:saldo });
+  DB.set('ferr_caja_historial', historial.slice(0,50));
+  DB.set('ferr_caja', { estado:'cerrada', movimientos:[] });
+  toast('Caja cerrada correctamente','ok');
+  renderCaja();
+}
+
+function agregarEgreso() {
+  const concepto = prompt('Concepto del egreso (Ej: Pago a proveedor, compra insumos):');
+  if (!concepto) return;
+  const monto = parseFloat(prompt('Monto del egreso (USD):'));
+  if (isNaN(monto) || monto <= 0) { toast('Monto inválido','err'); return; }
+  const caja = DB.get('ferr_caja',{});
+  if (!caja.movimientos) caja.movimientos = [];
+  caja.movimientos.push({ id:nuevoId(), tipo:'egreso', monto, concepto, metodo:'Efectivo $', fecha:nowISO() });
+  DB.set('ferr_caja', caja);
+  toast(`Egreso registrado: ${fUSD(monto)}`,'warn');
+  renderCaja();
+}
+
+/* ═══════════════════════════════════════════
+   PROVEEDORES
+═══════════════════════════════════════════ */
+function renderProveedores() {
+  const provs = DB.get('ferr_proveedores',[]) || [];
+  const totalDeuda = provs.reduce((s,p)=>s+(p.deuda||0),0);
+  document.getElementById('v-proveedores').innerHTML = `
+    <div class="page-hdr">
+      <div>
+        <div class="page-hdr-title">🚚 Proveedores</div>
+        <div class="page-hdr-sub">Deuda total con proveedores: <b style="color:var(--danger)">${fUSD(totalDeuda)}</b></div>
+      </div>
+      <button class="btn btn-neon btn-sm" onclick="abrirModalProv(null)"><i class="fas fa-plus"></i> Nuevo Proveedor</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        ${provs.length===0
+          ? `<div class="empty-state"><div class="empty-icon">🚚</div><div class="empty-title">Sin proveedores registrados</div></div>`
+          : `<table>
+              <thead><tr><th>Empresa</th><th>RIF</th><th>Teléfono</th><th>Deuda</th><th>Acciones</th></tr></thead>
+              <tbody>${provs.map(p=>`
+                <tr>
+                  <td style="font-weight:700;color:var(--text)">${p.empresa}</td>
+                  <td style="color:var(--text3)">${p.rif||'—'}</td>
+                  <td style="color:var(--text3)">${p.tel||'—'}</td>
+                  <td class="mono" style="font-weight:800;color:${p.deuda>0?'var(--danger)':'var(--green)'}">${fUSD(p.deuda||0)}</td>
+                  <td>
+                    <div style="display:flex;gap:5px">
+                      <button class="btn btn-ghost btn-xs" onclick="abrirModalProv(${p.id})"><i class="fas fa-pen"></i></button>
+                      <button class="btn btn-ghost btn-xs" style="color:var(--danger)" onclick="eliminarProv(${p.id})"><i class="fas fa-trash"></i></button>
+                    </div>
+                  </td>
+                </tr>`).join('')}
+              </tbody>
+            </table>`
+        }
+      </div>
+    </div>
+  `;
+}
+
+function abrirModalProv(id) {
+  const provs = DB.get('ferr_proveedores',[]) || [];
+  const p = id ? provs.find(x=>x.id===id) : null;
+  const html = `
+    <div class="modal-overlay open" id="modalProv" onclick="if(event.target===this)cerrarModal('modalProv')">
+      <div class="modal">
+        <div class="modal-head"><div class="modal-title">${p?'✏️ Editar Proveedor':'🚚 Nuevo Proveedor'}</div><button class="modal-close" onclick="cerrarModal('modalProv')">✕</button></div>
+        <div class="modal-body">
+          <input type="hidden" id="provId" value="${p?.id||''}">
+          <div class="input-group"><label class="input-label">Empresa / Nombre</label><input class="inp" id="provEmpresa" value="${p?.empresa||''}" placeholder="Distribuidora Tuy C.A."></div>
+          <div class="inp-row col2">
+            <div class="input-group" style="margin:0"><label class="input-label">RIF</label><input class="inp" id="provRif" value="${p?.rif||''}" placeholder="J-00000000-0"></div>
+            <div class="input-group" style="margin:0"><label class="input-label">Teléfono</label><input class="inp" id="provTel" value="${p?.tel||''}" placeholder="0212-0000000"></div>
+          </div>
+          ${!p?`<div class="input-group"><label class="input-label">Deuda Inicial (USD)</label><input class="inp" id="provDeuda" type="number" value="0" step="0.01" min="0"></div>`:''}
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-ghost" onclick="cerrarModal('modalProv')">Cancelar</button>
+          <button class="btn btn-neon" onclick="guardarProv()"><i class="fas fa-floppy-disk"></i> Guardar</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function guardarProv() {
+  const id      = document.getElementById('provId').value;
+  const empresa = document.getElementById('provEmpresa').value.trim();
+  const rif     = document.getElementById('provRif').value.trim();
+  const tel     = document.getElementById('provTel').value.trim();
+  if (!empresa) { toast('El nombre de la empresa es obligatorio','err'); return; }
+  let provs = DB.get('ferr_proveedores',[]) || [];
+  if (id) {
+    provs = provs.map(p => p.id===parseInt(id) ? {...p,empresa,rif,tel} : p);
+    toast('Proveedor actualizado','ok');
+  } else {
+    const deuda = parseFloat(document.getElementById('provDeuda')?.value) || 0;
+    provs.unshift({ id:nuevoId(), empresa, rif, tel, deuda, historial:[] });
+    toast('Proveedor agregado','ok');
+  }
+  DB.set('ferr_proveedores', provs);
+  cerrarModal('modalProv');
+  renderProveedores();
+}
+
+function eliminarProv(id) {
+  if (!confirm('¿Eliminar este proveedor?')) return;
+  DB.set('ferr_proveedores', (DB.get('ferr_proveedores',[]) || []).filter(p=>p.id!==id));
+  toast('Proveedor eliminado','warn');
+  renderProveedores();
+}
+
+/* ═══════════════════════════════════════════
+   REPORTES
+═══════════════════════════════════════════ */
+function renderReportes() {
+  const ventas    = DB.get('ferr_ventas',[]) || [];
+  const productos = DB.get('ferr_productos',[]) || [];
+  const totalVentas = ventas.reduce((s,v)=>s+v.total,0);
+  const totalUnidades = ventas.reduce((s,v)=>s+v.items.reduce((a,i)=>a+i.qty,0),0);
+  const hoy = new Date().toDateString();
+  const totalHoy = ventas.filter(v=>new Date(v.fecha).toDateString()===hoy).reduce((s,v)=>s+v.total,0);
+
+  // Últimos 7 días
+  const labels7=[]; const data7=[];
+  for(let i=6;i>=0;i--){ const d=new Date();d.setDate(d.getDate()-i);const ds=d.toDateString();labels7.push(d.toLocaleDateString('es-VE',{weekday:'short',day:'numeric'}));data7.push(ventas.filter(v=>new Date(v.fecha).toDateString()===ds).reduce((s,v)=>s+v.total,0)); }
+
+  // Top productos
+  const prodVentas = {};
+  ventas.forEach(v=>v.items.forEach(i=>{ prodVentas[i.nombre]=(prodVentas[i.nombre]||0)+i.qty; }));
+  const topProds = Object.entries(prodVentas).sort((a,b)=>b[1]-a[1]).slice(0,6);
+
+  // Distribución métodos
+  const metodoCount = {};
+  ventas.forEach(v=>{ metodoCount[v.metodoPago]=(metodoCount[v.metodoPago]||0)+v.total; });
+  const metodoEntries = Object.entries(metodoCount);
+
+  document.getElementById('v-reportes').innerHTML = `
+    <div class="page-hdr">
+      <div class="page-hdr-title">📊 Reportes y Análisis</div>
+    </div>
+    <div class="stat-grid" style="margin-bottom:20px">
+      <div class="stat-card neon"><div class="stat-label">Total Ventas (histórico)</div><div class="stat-val neon">${fUSD(totalVentas)}</div><div class="stat-sub">${ventas.length} transacciones</div></div>
+      <div class="stat-card gold"><div class="stat-label">Ventas de Hoy</div><div class="stat-val gold">${fUSD(totalHoy)}</div></div>
+      <div class="stat-card green"><div class="stat-label">Unidades Vendidas</div><div class="stat-val green">${totalUnidades}</div></div>
+      <div class="stat-card purple"><div class="stat-label">Productos en Stock</div><div class="stat-val purple">${productos.reduce((s,p)=>s+p.stock,0)}</div></div>
+    </div>
+    <div class="grid-2" style="gap:18px;margin-bottom:18px">
+      <div class="card">
+        <div class="card-head"><div class="card-title"><i class="fas fa-chart-bar"></i> Ventas Últimos 7 Días (USD)</div></div>
+        <div class="card-body" style="height:240px"><canvas id="chartVentas7"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="card-title"><i class="fas fa-chart-pie"></i> Distribución por Método de Pago</div></div>
+        <div class="card-body" style="height:240px"><canvas id="chartMetodos"></canvas></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><div class="card-title"><i class="fas fa-trophy"></i> Top Productos Más Vendidos</div></div>
+      <div class="card-body" style="height:220px"><canvas id="chartTopProds"></canvas></div>
+    </div>
+  `;
+
+  requestAnimationFrame(() => {
+    const colores = ['#00d2ff','#f5a623','#10d48e','#ff4757','#8b5cf6','#ffa502'];
+    const gridColor = 'rgba(255,255,255,0.04)';
+    const tickColor = '#7a90b0';
+
+    const ctx1 = document.getElementById('chartVentas7');
+    if (ctx1) { if(window._cv1)window._cv1.destroy(); window._cv1 = new Chart(ctx1, { type:'bar', data:{ labels:labels7, datasets:[{ label:'Ventas $', data:data7, backgroundColor:'rgba(0,210,255,0.6)', borderColor:'#00d2ff', borderWidth:1, borderRadius:5 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{color:tickColor,font:{size:10}},grid:{color:gridColor}}, y:{ticks:{color:tickColor,font:{size:10},callback:v=>'$'+v},grid:{color:gridColor}} } } }); }
+
+    const ctx2 = document.getElementById('chartMetodos');
+    if (ctx2) { if(window._cv2)window._cv2.destroy(); window._cv2 = new Chart(ctx2, { type:'doughnut', data:{ labels:metodoEntries.map(([k])=>k), datasets:[{ data:metodoEntries.map(([,v])=>v), backgroundColor:colores, borderWidth:0 }] }, options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:'bottom', labels:{ color:tickColor, font:{size:10}, padding:12 } } } } }); }
+
+    const ctx3 = document.getElementById('chartTopProds');
+    if (ctx3) { if(window._cv3)window._cv3.destroy(); window._cv3 = new Chart(ctx3, { type:'bar', data:{ labels:topProds.map(([n])=>n.slice(0,20)), datasets:[{ label:'Uds. vendidas', data:topProds.map(([,v])=>v), backgroundColor:colores, borderRadius:5 }] }, options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, scales:{ x:{ticks:{color:tickColor,font:{size:10}},grid:{color:gridColor}}, y:{ticks:{color:tickColor,font:{size:10}},grid:{color:gridColor}} } } }); }
+  });
+}
+
+/* ═══════════════════════════════════════════
+   CONFIGURACIÓN
+═══════════════════════════════════════════ */
+function renderConfig() {
+  const cfg = DB.get('ferr_config', {});
+  const lic = DB.get('ferr_licencia', {});
+  document.getElementById('v-config').innerHTML = `
+    <div class="page-hdr"><div class="page-hdr-title">⚙️ Configuración del Sistema</div></div>
+    <div class="grid-2" style="gap:18px">
+      <div class="card">
+        <div class="card-head"><div class="card-title"><i class="fas fa-store"></i> Perfil del Negocio</div></div>
+        <div class="card-body">
+          <div class="input-group"><label class="input-label">Nombre del Negocio</label><input class="inp" id="cfgNombre" value="${cfg.nombre||''}" placeholder="Mi Ferretería"></div>
+          <div class="input-group"><label class="input-label">RIF</label><input class="inp" id="cfgRif" value="${cfg.rif||''}" placeholder="J-00000000-0"></div>
+          <div class="input-group"><label class="input-label">Dirección</label><textarea class="inp" id="cfgDir" placeholder="Dirección completa">${cfg.direccion||''}</textarea></div>
+          <button class="btn btn-neon" onclick="guardarConfig()"><i class="fas fa-floppy-disk"></i> Guardar Configuración</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px">
+        <div class="card">
+          <div class="card-head"><div class="card-title"><i class="fas fa-coins"></i> Moneda y Tasas</div></div>
+          <div class="card-body">
+            <div class="input-group">
+              <label class="input-label">Tasa BCV (Bs por $)</label>
+              <input class="inp" id="cfgTasa" type="number" step="0.01" value="${cfg.tasaBCV||0}" placeholder="36.50">
+            </div>
+            <div class="input-group" style="margin:0">
+              <label class="input-label">Alerta de Stock Mínimo (global)</label>
+              <input class="inp" id="cfgStockMin" type="number" value="${cfg.alertaStockMin||5}" min="0">
+            </div>
+            <button class="btn btn-gold" style="margin-top:14px" onclick="guardarConfig()"><i class="fas fa-floppy-disk"></i> Guardar</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head"><div class="card-title"><i class="fas fa-shield-halved"></i> Licencia Activa</div></div>
+          <div class="card-body">
+            <div style="margin-bottom:10px"><span class="badge ${lic.tipo==='PRO'?'badge-neon':lic.tipo==='MASTER'?'badge-purple':'badge-gold'}">${lic.tipo||'—'}</span></div>
+            <div style="font-family:var(--mono);font-size:12px;color:var(--neon);word-break:break-all;margin-bottom:8px">${lic.clave||'—'}</div>
+            <div style="font-size:11px;color:var(--text3)">Activado: ${lic.activadoEn?fFecha(lic.activadoEn):'—'}</div>
+            <div style="font-size:11px;color:var(--text3);margin-top:3px">Device ID: <span style="font-family:var(--mono);font-size:10px">${getDeviceId()}</span></div>
+            ${lic.tipo==='DEMO'?`<div style="margin-top:8px"><span class="badge badge-warn">${diasRestantesDemo()} día(s) restantes</span></div>`:''}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function guardarConfig() {
+  const cfg = DB.get('ferr_config',{});
+  cfg.nombre      = document.getElementById('cfgNombre')?.value.trim() || cfg.nombre;
+  cfg.rif         = document.getElementById('cfgRif')?.value.trim() || cfg.rif;
+  cfg.direccion   = document.getElementById('cfgDir')?.value.trim() || cfg.direccion;
+  const tasa      = parseFloat(document.getElementById('cfgTasa')?.value);
+  if (!isNaN(tasa) && tasa > 0) cfg.tasaBCV = tasa;
+  const sMin      = parseInt(document.getElementById('cfgStockMin')?.value);
+  if (!isNaN(sMin)) cfg.alertaStockMin = sMin;
+  DB.set('ferr_config', cfg);
+  actualizarTopbarTasa();
+  toast('Configuración guardada','ok');
+}
+
+/* ─────────────────────────────────────────────
+   UTILITARIO DE MODALES
+───────────────────────────────────────────── */
+function cerrarModal(id) {
+  const el = document.getElementById(id);
+  if (el) el.remove();
+}
+</script>
+</body>
+</html>
