@@ -210,6 +210,84 @@ html, body { height: 100%; font-family: var(--font); background: var(--bg); colo
 }
 
 /* ═══════════════════════════════════════════
+   REGISTRO + LICENCIA — 2 pasos
+═══════════════════════════════════════════ */
+.lock-box-wide { max-width: 470px !important; }
+
+.step-bar {
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 22px;
+}
+.step-item { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+.step-circle {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid var(--border); background: var(--bg2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: var(--text3);
+  font-family: var(--mono); transition: all 0.3s;
+}
+.step-circle.active { border-color: var(--neon); color: var(--neon); box-shadow: 0 0 10px rgba(0,210,255,0.25); }
+.step-circle.done   { border-color: var(--green); background: rgba(16,212,142,0.08); color: var(--green); }
+.step-label { font-size: 8px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--text3); }
+.step-label.active { color: var(--neon); }
+.step-label.done   { color: var(--green); }
+.step-line {
+  width: 44px; height: 2px; background: var(--border);
+  margin: 0 8px; margin-bottom: 20px; flex-shrink: 0; transition: background 0.3s;
+}
+.step-line.done { background: var(--green); }
+
+/* Device ID — caja prominente */
+.did-box {
+  background: rgba(0,210,255,0.04); border: 1px solid var(--border2);
+  border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px;
+  text-align: center;
+}
+.did-box-label {
+  font-size: 9px; font-weight: 800; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--neon); margin-bottom: 8px;
+}
+.did-box-value {
+  font-family: var(--mono); font-size: 12px; font-weight: 700;
+  color: var(--text); letter-spacing: 1px; word-break: break-all;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px 12px; margin-bottom: 10px; user-select: all;
+}
+.did-box-actions { display: flex; gap: 8px; justify-content: center; }
+.did-btn {
+  flex: 1; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid var(--border2); background: transparent;
+  color: var(--text2); font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+}
+.did-btn:hover { border-color: var(--neon); color: var(--neon); }
+.did-btn.wa { border-color: rgba(37,211,102,0.3); color: #25D366; }
+.did-btn.wa:hover { border-color: #25D366; background: rgba(37,211,102,0.06); }
+.did-hint { font-size: 10px; color: var(--text3); margin-top: 8px; line-height: 1.5; }
+
+/* Inputs de Registro */
+.reg-field { margin-bottom: 13px; }
+.reg-label {
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 6px; display: block;
+}
+.reg-input {
+  width: 100%; background: var(--bg2); border: 1px solid var(--border2);
+  color: var(--text); padding: 12px 14px; border-radius: var(--radius);
+  font-family: var(--font); font-size: 14px; outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.reg-input:focus { border-color: var(--neon); box-shadow: 0 0 0 3px rgba(0,210,255,0.08); }
+.reg-input::placeholder { color: var(--text3); font-size: 12px; }
+.reg-err {
+  display: none; color: var(--danger); font-size: 11px; font-weight: 600;
+  text-align: center; margin-top: 8px; padding: 7px 10px;
+  background: rgba(255,71,87,0.08); border: 1px solid rgba(255,71,87,0.2); border-radius: 6px;
+}
+
+/* ═══════════════════════════════════════════
    APP SHELL
 ═══════════════════════════════════════════ */
 #app {
@@ -808,47 +886,130 @@ hr.div { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
      IRON LOCK V2 — PANTALLA DE ACCESO
 ═══════════════════════════════════════════════ -->
 <div id="ironLock">
-  <div class="lock-box">
 
+  <!-- ══════════ PASO 1: REGISTRO DEL NEGOCIO ══════════ -->
+  <div class="lock-box lock-box-wide" id="screenRegistro" style="display:none">
     <div class="lock-brand">
       <div class="lock-icon">🔩</div>
       <div class="lock-title">Ferretería <span>Pro</span></div>
-      <div class="lock-sub">Sistema de Gestión Comercial</div>
-      <div class="lock-badge-a2k">
-        <i class="fas fa-bolt"></i> A2K Digital Studio
+      <div class="lock-sub">Registro del Negocio</div>
+      <div class="lock-badge-a2k"><i class="fas fa-bolt"></i> A2K Digital Studio</div>
+    </div>
+
+    <div class="step-bar">
+      <div class="step-item">
+        <div class="step-circle active">1</div>
+        <div class="step-label active">Registro</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle">2</div>
+        <div class="step-label">Licencia</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle"><i class="fas fa-check" style="font-size:9px"></i></div>
+        <div class="step-label">Activo</div>
+      </div>
+    </div>
+
+    <div class="did-box">
+      <div class="did-box-label"><i class="fas fa-fingerprint"></i>&nbsp; ID de Dispositivo</div>
+      <div class="did-box-value" id="regDeviceId">Calculando...</div>
+      <div class="did-box-actions">
+        <button class="did-btn" onclick="copiarDeviceId()"><i class="fas fa-copy"></i> Copiar ID</button>
+        <button class="did-btn wa" onclick="enviarIdWA()"><i class="fab fa-whatsapp"></i> Enviar a A2K</button>
+      </div>
+      <div class="did-hint">Envía este ID + comprobante de pago para recibir tu licencia.</div>
+    </div>
+
+    <div class="reg-field">
+      <label class="reg-label" for="regNegocio">Nombre del Negocio *</label>
+      <input class="reg-input" id="regNegocio" type="text" placeholder="Ej: Ferretería El Constructor"
+        autocomplete="organization" maxlength="80"
+        onkeydown="if(event.key==='Enter') document.getElementById('regEmail').focus()">
+    </div>
+    <div class="reg-field">
+      <label class="reg-label" for="regEmail">Correo Electrónico *</label>
+      <input class="reg-input" id="regEmail" type="email" placeholder="correo@ejemplo.com"
+        autocomplete="email" maxlength="100"
+        onkeydown="if(event.key==='Enter') document.getElementById('regTel').focus()">
+    </div>
+    <div class="reg-field">
+      <label class="reg-label" for="regTel">Teléfono / WhatsApp *</label>
+      <input class="reg-input" id="regTel" type="tel" placeholder="Ej: +58 416-4117331"
+        autocomplete="tel" maxlength="25"
+        onkeydown="if(event.key==='Enter') guardarRegistro()">
+    </div>
+    <div class="reg-err" id="regErr"></div>
+
+    <button class="lock-btn" onclick="guardarRegistro()">
+      <i class="fas fa-arrow-right"></i>&nbsp; CONTINUAR — INGRESAR LICENCIA
+    </button>
+
+    <div class="lock-footer">
+      Ferretería Pro v2.0 &nbsp;·&nbsp; <b>A2K Digital Studio</b><br>
+      <span style="color:var(--text3)">+58 416-4117331 &nbsp;·&nbsp; a2kdigitalstudio.online</span>
+    </div>
+  </div>
+
+  <!-- ══════════ PASO 2: ACTIVAR LICENCIA ══════════ -->
+  <div class="lock-box" id="screenLicencia" style="display:none">
+    <div class="lock-brand">
+      <div class="lock-icon">🔩</div>
+      <div class="lock-title">Ferretería <span>Pro</span></div>
+      <div class="lock-sub">Activar Licencia</div>
+      <div class="lock-badge-a2k"><i class="fas fa-bolt"></i> A2K Digital Studio</div>
+    </div>
+
+    <div class="step-bar">
+      <div class="step-item">
+        <div class="step-circle done"><i class="fas fa-check" style="font-size:9px"></i></div>
+        <div class="step-label done">Registro</div>
+      </div>
+      <div class="step-line done"></div>
+      <div class="step-item">
+        <div class="step-circle active">2</div>
+        <div class="step-label active">Licencia</div>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item">
+        <div class="step-circle"><i class="fas fa-check" style="font-size:9px"></i></div>
+        <div class="step-label">Activo</div>
       </div>
     </div>
 
     <div>
       <label class="lock-label" for="lockInput">Clave de Licencia</label>
-      <input
-        class="lock-input"
-        id="lockInput"
-        type="text"
+      <input class="lock-input" id="lockInput" type="text"
         placeholder="FERR-PRO-XXXXXX-0000-0000"
-        autocomplete="off"
-        spellcheck="false"
-        onkeydown="if(event.key==='Enter') intentarActivar()"
-      >
+        autocomplete="off" spellcheck="false"
+        onkeydown="if(event.key==='Enter') intentarActivar()">
       <div class="lock-err" id="lockErr"></div>
       <button class="lock-btn" onclick="intentarActivar()">
         <i class="fas fa-unlock-alt"></i>&nbsp; ACTIVAR SISTEMA
       </button>
     </div>
 
-    <div class="lock-demo-hint">
-      ¿No tienes clave? Contacta a <b style="color:var(--gold)">A2K Digital Studio</b> para obtener una licencia.
+    <div class="did-box" style="margin-top:16px">
+      <div class="did-box-label"><i class="fas fa-fingerprint"></i>&nbsp; ID de Dispositivo</div>
+      <div class="did-box-value" id="deviceIdTxt">—</div>
+      <div class="did-box-actions">
+        <button class="did-btn" onclick="copiarDeviceId()"><i class="fas fa-copy"></i> Copiar</button>
+        <button class="did-btn wa" onclick="enviarIdWA()"><i class="fab fa-whatsapp"></i> Solicitar Clave</button>
+      </div>
     </div>
 
-    <div class="device-id-badge" id="deviceIdBadge">
-      ID Dispositivo: <span id="deviceIdTxt">—</span>
-    </div>
+    <button onclick="volverARegistro()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;width:100%;text-align:center;padding:4px 0;margin-top:2px;">
+      ← Cambiar datos del negocio
+    </button>
 
     <div class="lock-footer">
       Ferretería Pro v2.0 &nbsp;·&nbsp; <b>A2K Digital Studio</b><br>
       Iron Lock v2 — Licencia vinculada al equipo
     </div>
   </div>
+
 </div>
 
 
@@ -1252,14 +1413,102 @@ function nav(viewId, el) {
 }
 
 /* ─────────────────────────────────────────────
-   BOOT
+   BOOT — Registro + Licencia (2 pasos)
 ───────────────────────────────────────────── */
+const A2K_WA = '584164117331';
+
 function mostrarLock() {
-  document.getElementById('ironLock').style.display = 'flex';
-  document.getElementById('app').style.display      = 'none';
-  // Mostrar device ID en la pantalla de lock
+  const reg = DB.get('ferr_registro', null);
+  if (reg && reg.negocio && reg.email && reg.tel) {
+    mostrarLicencia();
+  } else {
+    mostrarRegistro();
+  }
+}
+
+function mostrarRegistro() {
+  document.getElementById('ironLock').style.display        = 'flex';
+  document.getElementById('app').style.display             = 'none';
+  document.getElementById('screenRegistro').style.display  = 'block';
+  document.getElementById('screenLicencia').style.display  = 'none';
+  const did = getDeviceId();
+  document.getElementById('regDeviceId').textContent = did;
+  // Pre-cargar datos si ya existen
+  const reg = DB.get('ferr_registro', null);
+  if (reg) {
+    document.getElementById('regNegocio').value = reg.negocio || '';
+    document.getElementById('regEmail').value   = reg.email   || '';
+    document.getElementById('regTel').value     = reg.tel     || '';
+  }
+}
+
+function mostrarLicencia() {
+  document.getElementById('ironLock').style.display        = 'flex';
+  document.getElementById('app').style.display             = 'none';
+  document.getElementById('screenRegistro').style.display  = 'none';
+  document.getElementById('screenLicencia').style.display  = 'block';
   const did = getDeviceId();
   document.getElementById('deviceIdTxt').textContent = did;
+}
+
+function volverARegistro() {
+  document.getElementById('screenRegistro').style.display = 'block';
+  document.getElementById('screenLicencia').style.display = 'none';
+  const reg = DB.get('ferr_registro', null);
+  if (reg) {
+    document.getElementById('regNegocio').value = reg.negocio || '';
+    document.getElementById('regEmail').value   = reg.email   || '';
+    document.getElementById('regTel').value     = reg.tel     || '';
+  }
+}
+
+function guardarRegistro() {
+  const negocio = document.getElementById('regNegocio').value.trim();
+  const email   = document.getElementById('regEmail').value.trim();
+  const tel     = document.getElementById('regTel').value.trim();
+  const errEl   = document.getElementById('regErr');
+  errEl.style.display = 'none';
+
+  if (!negocio || negocio.length < 2) {
+    errEl.textContent = '⚠ Ingresa el nombre del negocio (mín. 2 caracteres).';
+    errEl.style.display = 'block';
+    document.getElementById('regNegocio').focus(); return;
+  }
+  if (!email || !email.includes('@') || !email.includes('.')) {
+    errEl.textContent = '⚠ Ingresa un correo electrónico válido.';
+    errEl.style.display = 'block';
+    document.getElementById('regEmail').focus(); return;
+  }
+  if (!tel || tel.replace(/\D/g,'').length < 7) {
+    errEl.textContent = '⚠ Ingresa un número de teléfono válido.';
+    errEl.style.display = 'block';
+    document.getElementById('regTel').focus(); return;
+  }
+
+  DB.set('ferr_registro', {
+    negocio, email, tel,
+    deviceId:      getDeviceId(),
+    registradoEn:  new Date().toISOString()
+  });
+  mostrarLicencia();
+}
+
+function copiarDeviceId() {
+  const did = getDeviceId();
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(did).then(() => toast('ID copiado al portapapeles', 'ok', 2000));
+  } else {
+    const el = document.getElementById('regDeviceId') || document.getElementById('deviceIdTxt');
+    if (el) { const r = document.createRange(); r.selectNode(el); window.getSelection().removeAllRanges(); window.getSelection().addRange(r); }
+    toast('Selecciona y copia el ID manualmente', 'info', 2500);
+  }
+}
+
+function enviarIdWA() {
+  const reg = DB.get('ferr_registro', {});
+  const did = getDeviceId();
+  const msg = `Hola A2K Digital Studio 👋\n\nQuiero activar *Ferretería Pro*:\n\n🏪 Negocio: ${reg.negocio||'—'}\n📧 Correo: ${reg.email||'—'}\n📱 Tel: ${reg.tel||'—'}\n\n🖥️ ID de Dispositivo:\n*${did}*\n\nAdjunto comprobante de pago. ¡Gracias!`;
+  window.open(`https://wa.me/${A2K_WA}?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
 function mostrarApp() {

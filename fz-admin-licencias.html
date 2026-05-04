@@ -1,567 +1,1650 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Panel Admin — Ferretería Zync · A2K Digital Studio</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#0a0f1a;--bg2:#0d1424;--bg3:#111927;--bg4:#162033;
-  --neon:#00ff88;--accent:#00b4ff;--warn:#f59e0b;--danger:#ef4444;--info:#a78bfa;
-  --text1:#f0f6ff;--text2:#8899aa;--text3:#445566;
-  --border:#1e2d42;--border2:#253347;
-  --radius:10px;--shadow:0 4px 24px rgba(0,0,0,.45);
-}
-*{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text1);font-family:'Inter',sans-serif;min-height:100vh;display:flex;flex-direction:column;}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ferretería Pro — Panel de Licencias | A2K Digital Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&family=Syne:wght@700;800&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* === ROOT === */
+    :root {
+      --bg0: #020617;
+      --bg1: #060d1a;
+      --bg2: #0a1628;
+      --bg3: #111827;
+      --bg4: #1a2540;
+      --card: rgba(10,22,40,0.97);
+      --border: rgba(0,229,255,0.12);
+      --border-b: rgba(0,229,255,0.45);
+      --cyan: #00e5ff;
+      --cyan-dim: rgba(0,229,255,0.6);
+      --cyan-glow: rgba(0,229,255,0.1);
+      --green: #00ff88;
+      --green-dim: rgba(0,255,136,0.6);
+      --amber: #ffd600;
+      --red: #ff4455;
+      --purple: #b388ff;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --text-muted: #3d4f6b;
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Inter', sans-serif;
+      --display: 'Syne', sans-serif;
+      --r: 12px;
+      --r-sm: 8px;
+      --shadow: 0 8px 40px rgba(0,0,0,0.7);
+      --shadow-c: 0 0 30px rgba(0,229,255,0.15);
+      --t: 0.18s ease;
+    }
 
-/* ── Login ── */
-#loginScreen{
-  position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;
-  z-index:9999;flex-direction:column;gap:0;
-}
-.login-box{
-  background:var(--bg2);border:1px solid var(--border2);border-radius:16px;
-  padding:40px 36px;width:100%;max-width:420px;box-shadow:var(--shadow);
-}
-.login-logo{text-align:center;margin-bottom:28px;}
-.login-logo .icon{font-size:52px;display:block;margin-bottom:8px;}
-.login-logo h1{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--neon);letter-spacing:-0.5px;}
-.login-logo p{font-size:13px;color:var(--text2);margin-top:4px;}
-.login-err{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#fca5a5;
-  border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:16px;display:none;}
-.form-label{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;display:block;margin-bottom:6px;}
-.form-input{
-  width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;
-  padding:11px 14px;color:var(--text1);font-size:14px;font-family:'JetBrains Mono',monospace;
-  outline:none;transition:border .2s;
-}
-.form-input:focus{border-color:var(--neon);}
-.btn{
-  display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  padding:10px 18px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;
-  border:none;transition:opacity .15s,transform .1s;
-}
-.btn:active{transform:scale(.98);}
-.btn-primary{background:var(--neon);color:#000;}
-.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text1);}
-.btn-danger{background:var(--danger);color:#fff;}
-.btn-warn{background:var(--warn);color:#000;}
-.btn-info{background:var(--info);color:#000;}
-.btn-full{width:100%;}
-.btn-sm{padding:6px 12px;font-size:12px;}
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
 
-/* ── App ── */
-#app{display:none;flex:1;flex-direction:column;}
-.topbar{
-  background:var(--bg2);border-bottom:1px solid var(--border);
-  padding:12px 20px;display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:100;
-}
-.topbar-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:var(--neon);display:flex;align-items:center;gap:8px;}
-.topbar-sub{font-size:11px;color:var(--text2);font-weight:400;font-family:'Inter',sans-serif;}
-.topbar-right{display:flex;align-items:center;gap:10px;}
-.badge-admin{background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.4);color:var(--info);
-  padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;}
+    body {
+      font-family: var(--sans);
+      background: var(--bg0);
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 14px;
+      overflow-x: hidden;
+    }
 
-.main{padding:24px 20px;max-width:900px;margin:0 auto;width:100%;}
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
 
-/* ── Tabs ── */
-.tabs{display:flex;gap:8px;margin-bottom:24px;border-bottom:1px solid var(--border);padding-bottom:12px;}
-.tab-btn{
-  padding:8px 18px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;
-  border:none;background:transparent;color:var(--text2);transition:all .2s;
-}
-.tab-btn.active{background:var(--neon);color:#000;}
+    /* === SCREENS === */
+    .screen { display: none; position: relative; z-index: 1; }
+    .screen.active { display: flex; }
 
-/* ── Cards ── */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:20px;}
-.card-title{font-size:14px;font-weight:700;color:var(--text1);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
-.card-title span{color:var(--text2);font-weight:400;}
+    /* ============================================================
+       LOGIN SCREEN
+    ============================================================ */
+    #screenLogin {
+      min-height: 100vh;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
 
-/* ── Form groups ── */
-.fg{margin-bottom:14px;}
-.row-2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-.row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+    .login-card {
+      background: var(--card);
+      border: 1px solid var(--border-b);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: var(--shadow), var(--shadow-c), 0 0 80px rgba(0,229,255,0.06);
+      text-align: center;
+    }
 
-/* ── Result box ── */
-.result-box{
-  background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.25);
-  border-radius:10px;padding:16px;margin-top:14px;display:none;
-}
-.result-code{
-  font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:700;
-  color:var(--neon);letter-spacing:1px;word-break:break-all;text-align:center;
-  padding:12px;background:rgba(0,255,136,.08);border-radius:8px;margin-bottom:12px;
-}
-.result-code-demo{color:var(--warn);background:rgba(245,158,11,.08);}
-.result-info{font-size:12px;color:var(--text2);text-align:center;margin-bottom:12px;}
-.result-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+    .login-wordmark {
+      font-family: var(--display);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 4px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-bottom: 24px;
+    }
 
-/* ── Table ── */
-.table-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
-table{width:100%;border-collapse:collapse;font-size:13px;}
-thead th{
-  background:var(--bg3);padding:10px 12px;text-align:left;
-  font-size:11px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;
-  border-bottom:1px solid var(--border);
-}
-tbody tr{border-bottom:1px solid var(--border);}
-tbody tr:last-child{border-bottom:none;}
-tbody tr:hover{background:var(--bg3);}
-tbody td{padding:10px 12px;vertical-align:middle;}
-.code-mono{font-family:'JetBrains Mono',monospace;font-size:12px;}
-.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;}
-.badge-pro{background:rgba(0,255,136,.15);color:var(--neon);}
-.badge-demo{background:rgba(245,158,11,.15);color:var(--warn);}
-.badge-exp{background:rgba(239,68,68,.15);color:var(--danger);}
+    .login-icon {
+      width: 76px;
+      height: 76px;
+      background: var(--cyan-glow);
+      border: 1px solid var(--border-b);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 30px;
+      color: var(--cyan);
+      box-shadow: 0 0 24px rgba(0,229,255,0.2);
+    }
 
-/* ── Toast ── */
-#toast-wrap{position:fixed;bottom:20px;right:20px;display:flex;flex-direction:column;gap:8px;z-index:99999;}
-.toast{
-  padding:10px 16px;border-radius:8px;font-size:13px;font-weight:600;
-  min-width:200px;animation:fadeIn .2s;
-}
-.toast-success{background:#052e16;border:1px solid var(--neon);color:var(--neon);}
-.toast-error{background:#1f0707;border:1px solid var(--danger);color:#fca5a5;}
-.toast-info{background:#0c1a2e;border:1px solid var(--accent);color:var(--accent);}
-.toast-warning{background:#1c1407;border:1px solid var(--warn);color:var(--warn);}
-@keyframes fadeIn{from{opacity:0;transform:translateX(20px);}to{opacity:1;transform:translateX(0);}}
+    .login-title {
+      font-family: var(--display);
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
 
-/* Stats strip */
-.stats-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
-.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;text-align:center;}
-.stat-val{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;}
-.stat-val.green{color:var(--neon);}
-.stat-val.warn{color:var(--warn);}
-.stat-val.danger{color:var(--danger);}
-.stat-lbl{font-size:11px;color:var(--text2);margin-top:2px;}
+    .login-title span { color: var(--cyan); }
 
-/* Table toolbar */
-.tbar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;flex-wrap:wrap;}
-.tbar-title{font-size:14px;font-weight:700;}
-.search-inp{background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;
-  color:var(--text1);font-size:13px;outline:none;width:180px;}
-.search-inp:focus{border-color:var(--accent);}
-select.form-input{cursor:pointer;}
+    .login-sub {
+      color: var(--text-dim);
+      font-size: 13px;
+      margin-bottom: 32px;
+    }
 
-/* Info alert */
-.info-alert{background:rgba(0,180,255,.07);border:1px solid rgba(0,180,255,.2);border-radius:10px;
-  padding:12px 16px;font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6;}
-.info-alert strong{color:var(--accent);}
+    .form-group { text-align: left; margin-bottom: 18px; }
 
-@media(max-width:600px){
-  .row-2,.row-3{grid-template-columns:1fr;}
-  .stats-strip{grid-template-columns:1fr 1fr;}
-  .main{padding:16px 12px;}
-  .login-box{padding:28px 20px;}
-}
-</style>
+    .form-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 12px 16px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 14px;
+      outline: none;
+      transition: var(--t);
+    }
+
+    .form-control:focus {
+      border-color: var(--cyan-dim);
+      box-shadow: 0 0 0 3px rgba(0,229,255,0.08);
+    }
+
+    .form-control::placeholder { color: var(--text-muted); font-family: var(--sans); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #00b8d9, var(--cyan));
+      color: #000d1a;
+      border: none;
+      border-radius: var(--r-sm);
+      font-family: var(--display);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      cursor: pointer;
+      transition: var(--t);
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(0,229,255,0.38);
+    }
+
+    .btn-primary:active { transform: translateY(0); }
+
+    .login-error {
+      display: none;
+      background: rgba(255,68,85,0.08);
+      border: 1px solid rgba(255,68,85,0.35);
+      color: var(--red);
+      border-radius: var(--r-sm);
+      padding: 10px 14px;
+      font-size: 13px;
+      margin-top: 14px;
+      text-align: center;
+    }
+
+    .login-error.show { display: block; }
+
+    .login-footer {
+      margin-top: 28px;
+      color: var(--text-muted);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* ============================================================
+       MAIN PANEL
+    ============================================================ */
+    #screenPanel {
+      min-height: 100vh;
+      flex-direction: column;
+    }
+
+    /* --- Header --- */
+    .panel-header {
+      background: var(--bg1);
+      border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .hdr-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hdr-logo {
+      width: 38px;
+      height: 38px;
+      background: var(--cyan-glow);
+      border: 1px solid var(--border-b);
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--cyan);
+      font-size: 16px;
+    }
+
+    .hdr-name {
+      font-family: var(--display);
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+    }
+
+    .hdr-name small {
+      display: block;
+      font-family: var(--sans);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .hdr-actions { display: flex; align-items: center; gap: 12px; }
+
+    .badge-admin {
+      background: var(--cyan-glow);
+      border: 1px solid var(--border-b);
+      color: var(--cyan);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 5px 12px;
+      border-radius: 20px;
+      text-transform: uppercase;
+    }
+
+    .btn-logout {
+      padding: 8px 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      border-radius: var(--r-sm);
+      font-size: 12px;
+      cursor: pointer;
+      transition: var(--t);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* --- Panel body --- */
+    .panel-body {
+      flex: 1;
+      padding: 32px;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* --- Tabs --- */
+    .tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 4px;
+      margin-bottom: 28px;
+      width: fit-content;
+    }
+
+    .tab-btn {
+      padding: 10px 22px;
+      border: none;
+      background: transparent;
+      color: var(--text-dim);
+      border-radius: var(--r-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--t);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn.active {
+      background: var(--cyan-glow);
+      color: var(--cyan);
+      border: 1px solid var(--border-b);
+    }
+
+    .tab-btn:not(.active):hover {
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.2s ease; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    /* ============================================================
+       CARDS
+    ============================================================ */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .card-title {
+      font-family: var(--display);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .card-title i { color: var(--cyan); font-size: 14px; }
+
+    /* ============================================================
+       GENERATOR TAB
+    ============================================================ */
+    .gen-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 800px) {
+      .gen-grid { grid-template-columns: 1fr; }
+      .panel-body { padding: 20px; }
+      .panel-header { padding: 0 20px; }
+      .tabs { width: 100%; }
+    }
+
+    /* Type selector */
+    .type-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .type-option {
+      padding: 14px 12px;
+      border: 2px solid var(--border);
+      border-radius: var(--r-sm);
+      cursor: pointer;
+      transition: var(--t);
+      text-align: center;
+    }
+
+    .type-option.selected {
+      border-color: var(--cyan-dim);
+      background: var(--cyan-glow);
+    }
+
+    .type-option:not(.selected):hover {
+      border-color: rgba(0,229,255,0.28);
+      background: rgba(0,229,255,0.04);
+    }
+
+    .type-option .t-icon { font-size: 22px; margin-bottom: 6px; }
+    .type-option .t-name { font-weight: 700; font-size: 13px; color: var(--text); }
+    .type-option .t-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+    .type-option[data-tipo="PRO"]  .t-icon { color: var(--cyan); }
+    .type-option[data-tipo="DEMO"] .t-icon { color: var(--amber); }
+
+    /* Generate button */
+    .btn-gen {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #00b8d9, var(--cyan));
+      color: #000d1a;
+      border: none;
+      border-radius: var(--r-sm);
+      font-family: var(--display);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: var(--t);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .btn-gen:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 28px rgba(0,229,255,0.38);
+    }
+
+    /* Result panel */
+    .result-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 240px;
+      color: var(--text-muted);
+      gap: 14px;
+      text-align: center;
+    }
+
+    .result-empty i { font-size: 40px; color: var(--border-b); }
+    .result-empty p { font-size: 13px; color: var(--text-dim); line-height: 1.5; }
+
+    .result-key-display { display: none; }
+
+    .key-type-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .key-type-badge.pro  { background: rgba(0,229,255,0.12); color: var(--cyan);  border: 1px solid rgba(0,229,255,0.35); }
+    .key-type-badge.demo { background: rgba(255,214,0,0.1);  color: var(--amber); border: 1px solid rgba(255,214,0,0.35); }
+
+    .key-string {
+      font-family: var(--mono);
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--green);
+      letter-spacing: 2px;
+      background: rgba(0,255,136,0.04);
+      border: 1px solid rgba(0,255,136,0.18);
+      border-radius: var(--r-sm);
+      padding: 16px 18px;
+      text-align: center;
+      word-break: break-all;
+      margin-bottom: 18px;
+      text-shadow: 0 0 20px rgba(0,255,136,0.35);
+    }
+
+    .key-meta { display: flex; flex-direction: column; gap: 7px; margin-bottom: 20px; }
+
+    .key-meta-row { display: flex; justify-content: space-between; font-size: 12px; }
+    .key-meta-row span:first-child { color: var(--text-dim); }
+    .key-meta-row span:last-child  { color: var(--text); font-weight: 600; font-family: var(--mono); font-size: 11px; }
+
+    .result-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .btn-copy {
+      padding: 11px;
+      background: rgba(0,229,255,0.08);
+      border: 1px solid rgba(0,229,255,0.35);
+      color: var(--cyan);
+      border-radius: var(--r-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--t);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-copy:hover { background: rgba(0,229,255,0.15); }
+
+    .btn-wapp {
+      padding: 11px;
+      background: rgba(37,211,102,0.08);
+      border: 1px solid rgba(37,211,102,0.35);
+      color: #25d366;
+      border-radius: var(--r-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--t);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+
+    .btn-wapp:hover { background: rgba(37,211,102,0.15); }
+
+    /* ============================================================
+       HISTORY TAB
+    ============================================================ */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 600px) { .stats-row { grid-template-columns: 1fr; } }
+
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .stat-icon {
+      width: 42px; height: 42px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .stat-val { font-family: var(--mono); font-size: 24px; font-weight: 700; line-height: 1; }
+    .stat-lbl { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+
+    .hist-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .hist-controls .form-control { width: auto; flex: 1; min-width: 180px; }
+    .hist-controls select.form-control { flex: 0; min-width: 140px; }
+
+    .btn-sm {
+      padding: 9px 16px;
+      border-radius: var(--r-sm);
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--t);
+      border: 1px solid;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .btn-danger {
+      background: rgba(255,68,85,0.08);
+      border-color: rgba(255,68,85,0.35);
+      color: var(--red);
+    }
+
+    .btn-danger:hover { background: rgba(255,68,85,0.16); }
+
+    .hist-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+    }
+
+    .hist-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+    .hist-table th {
+      background: var(--bg2);
+      padding: 11px 16px;
+      text-align: left;
+      font-size: 10px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .hist-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(0,229,255,0.04);
+      vertical-align: middle;
+    }
+
+    .hist-table tr:last-child td { border-bottom: none; }
+    .hist-table tr:hover td { background: rgba(0,229,255,0.025); }
+
+    .hist-table .key-cell {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--green);
+      letter-spacing: 1px;
+    }
+
+    .copy-inline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: var(--t);
+    }
+
+    .copy-inline:hover { border-color: var(--cyan-dim); color: var(--cyan); }
+
+    .hist-empty {
+      text-align: center;
+      padding: 52px 24px;
+      color: var(--text-muted);
+    }
+
+    .hist-empty i { font-size: 36px; display: block; margin-bottom: 14px; color: var(--border-b); }
+
+    .badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .badge-pro    { background: rgba(0,229,255,0.12); color: var(--cyan); }
+    .badge-demo   { background: rgba(255,214,0,0.1);  color: var(--amber); }
+    .badge-master { background: rgba(179,136,255,0.12); color: var(--purple); }
+
+    /* ============================================================
+       CONFIG TAB
+    ============================================================ */
+    .pass-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 14px;
+      align-items: end;
+    }
+
+    @media (max-width: 700px) { .pass-grid { grid-template-columns: 1fr; } }
+
+    .pass-grid .form-group { margin-bottom: 0; }
+
+    .btn-save {
+      padding: 12px 20px;
+      background: rgba(0,229,255,0.08);
+      border: 1px solid rgba(0,229,255,0.35);
+      color: var(--cyan);
+      border-radius: var(--r-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--t);
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    .btn-save:hover { background: rgba(0,229,255,0.15); }
+
+    .msg-box {
+      display: none;
+      margin-top: 14px;
+      padding: 10px 14px;
+      border-radius: var(--r-sm);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .master-key-item {
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--green);
+      background: rgba(0,255,136,0.04);
+      border: 1px solid rgba(0,255,136,0.14);
+      border-radius: var(--r-sm);
+      padding: 11px 16px;
+      margin-bottom: 8px;
+      text-shadow: 0 0 16px rgba(0,255,136,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .master-key-item:last-child { margin-bottom: 0; }
+
+    /* ============================================================
+       TOAST
+    ============================================================ */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      background: var(--bg3);
+      border: 1px solid var(--green-dim);
+      color: var(--green);
+      padding: 12px 20px;
+      border-radius: var(--r-sm);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow);
+      z-index: 9999;
+      transform: translateY(80px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      pointer-events: none;
+    }
+
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* ============================================================
+       TAB: AUDITORÍA
+    ============================================================ */
+    .audit-header {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px; margin-bottom: 20px;
+    }
+    .audit-form-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 24px; margin-bottom: 24px;
+    }
+    .audit-form-title {
+      font-size: 13px; font-weight: 700; color: var(--cyan);
+      letter-spacing: 1px; text-transform: uppercase; margin-bottom: 18px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .audit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .audit-grid .form-group { margin-bottom: 0; }
+    .audit-grid .form-group.full { grid-column: 1/-1; }
+    .audit-table-wrap {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--r); overflow: hidden;
+    }
+    .audit-toolbar {
+      display: flex; align-items: center; gap: 10px; padding: 14px 18px;
+      border-bottom: 1px solid var(--border); flex-wrap: wrap;
+    }
+    .audit-search {
+      flex: 1; min-width: 200px; background: var(--bg3);
+      border: 1px solid var(--border); color: var(--text);
+      padding: 9px 14px; border-radius: var(--r-sm); font-size: 13px; outline: none;
+    }
+    .audit-search:focus { border-color: var(--cyan); }
+    .audit-table { width: 100%; border-collapse: collapse; }
+    .audit-table th {
+      background: var(--bg3); color: var(--text-muted); font-size: 10px;
+      font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+      padding: 11px 14px; text-align: left; border-bottom: 1px solid var(--border);
+    }
+    .audit-table td {
+      padding: 11px 14px; font-size: 12px; color: var(--text);
+      border-bottom: 1px solid var(--border); vertical-align: top;
+    }
+    .audit-table tr:last-child td { border-bottom: none; }
+    .audit-table tr:hover td { background: rgba(0,229,255,0.03); }
+    .audit-table .mono { font-family: var(--mono); font-size: 11px; color: var(--cyan); word-break: break-all; }
+    .audit-table .dim  { color: var(--text-muted); font-size: 11px; }
+    .badge-pro  { background: rgba(0,229,255,0.1); color: var(--cyan); padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .badge-demo { background: rgba(255,214,0,0.1); color: var(--amber); padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+    .audit-empty { text-align: center; padding: 40px; color: var(--text-muted); font-size: 13px; }
+    .btn-del-audit {
+      background: none; border: none; color: var(--text-muted); cursor: pointer;
+      font-size: 12px; padding: 4px 8px; border-radius: 5px; transition: color 0.2s;
+    }
+    .btn-del-audit:hover { color: var(--red); }
+    .audit-stats {
+      display: flex; gap: 12px; margin-bottom: 18px; flex-wrap: wrap;
+    }
+    .astat {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: 12px 20px; text-align: center; flex: 1; min-width: 120px;
+    }
+    .astat-num { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--cyan); }
+    .astat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; }
+  </style>
 </head>
 <body>
 
-<!-- ══ LOGIN SCREEN ══ -->
-<div id="loginScreen">
-  <div class="login-box">
-    <div class="login-logo">
-      <span class="icon">🔑</span>
-      <h1>Panel de Licencias</h1>
-      <p>Ferretería Zync · A2K Digital Studio</p>
+<!-- ==============================
+     SCREEN: LOGIN
+============================== -->
+<div id="screenLogin" class="screen active">
+  <div class="login-card">
+    <div class="login-wordmark">A2K Digital Studio</div>
+    <div class="login-icon"><i class="fas fa-lock-keyhole"></i></div>
+    <div class="login-title">Panel de <span>Licencias</span></div>
+    <p class="login-sub">Ferretería Pro &mdash; Acceso Restringido</p>
+
+    <div class="form-group">
+      <label>Contraseña de Administrador</label>
+      <input type="password" id="inputPass" class="form-control"
+        placeholder="••••••••••" autocomplete="off">
     </div>
-    <div id="loginErr" class="login-err"></div>
-    <div class="fg">
-      <label class="form-label">Contraseña de Administrador</label>
-      <input type="password" id="adminPw" class="form-input" placeholder="Ingresa la clave admin"
-        onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <button class="btn btn-primary btn-full" style="height:44px;margin-top:8px;font-size:15px" onclick="doLogin()">
-      🔓 Acceder al Panel
+
+    <button class="btn-primary" onclick="intentarLogin()">
+      <i class="fas fa-arrow-right-to-bracket"></i> INGRESAR
     </button>
+
+    <div id="loginError" class="login-error">
+      <i class="fas fa-triangle-exclamation"></i> Contraseña incorrecta
+    </div>
+
+    <div class="login-footer">Ferretería Pro &mdash; A2K Digital Studio &copy; 2026</div>
   </div>
 </div>
 
-<!-- ══ APP ══ -->
-<div id="app">
-  <div class="topbar">
-    <div class="topbar-brand">
-      🔑 Panel Admin — Licencias
-      <span class="topbar-sub">/ Ferretería Zync</span>
-    </div>
-    <div class="topbar-right">
-      <span class="badge-admin">🛡️ ADMIN</span>
-      <button class="btn btn-ghost btn-sm" onclick="doLogout()">Cerrar sesión</button>
-    </div>
-  </div>
+<!-- ==============================
+     SCREEN: MAIN PANEL
+============================== -->
+<div id="screenPanel" class="screen">
 
-  <div class="main">
-
-    <div class="info-alert">
-      <strong>ℹ️ Cómo funciona:</strong>
-      Los códigos generados se guardan en el almacenamiento local del navegador (localStorage)
-      y son validados por la app Ferretería Zync en el mismo equipo.
-      Las licencias <strong>DEMO</strong> duran <strong>5 días</strong> desde el primer uso.
-      Las licencias <strong>PRO</strong> vencen según la duración seleccionada.
+  <!-- Header -->
+  <header class="panel-header">
+    <div class="hdr-brand">
+      <div class="hdr-logo"><i class="fas fa-screwdriver-wrench"></i></div>
+      <div class="hdr-name">
+        Ferretería Pro
+        <small>Panel de Licencias</small>
+      </div>
     </div>
-
-    <!-- Stats -->
-    <div class="stats-strip">
-      <div class="stat-card"><div class="stat-val green" id="stat-total">0</div><div class="stat-lbl">Total generadas</div></div>
-      <div class="stat-card"><div class="stat-val warn" id="stat-demo">0</div><div class="stat-lbl">DEMO activas</div></div>
-      <div class="stat-card"><div class="stat-val danger" id="stat-exp">0</div><div class="stat-lbl">Vencidas</div></div>
+    <div class="hdr-actions">
+      <span class="badge-admin"><i class="fas fa-shield-halved"></i>&nbsp; Admin</span>
+      <button class="btn-logout" onclick="cerrarSesion()">
+        <i class="fas fa-right-from-bracket"></i> Salir
+      </button>
     </div>
+  </header>
+
+  <!-- Panel body -->
+  <div class="panel-body">
 
     <!-- Tabs -->
     <div class="tabs">
-      <button class="tab-btn active" id="tab-pro" onclick="switchTab('pro')">⚡ Generar PRO</button>
-      <button class="tab-btn" id="tab-demo" onclick="switchTab('demo')">🎯 Generar DEMO</button>
-      <button class="tab-btn" id="tab-lista" onclick="switchTab('lista')">📋 Todas las Licencias</button>
+      <button class="tab-btn active" onclick="showTab('generador',this)">
+        <i class="fas fa-key"></i> Generador
+      </button>
+      <button class="tab-btn" onclick="showTab('historial',this)">
+        <i class="fas fa-clock-rotate-left"></i> Historial
+      </button>
+      <button class="tab-btn" onclick="showTab('config',this)">
+        <i class="fas fa-gear"></i> Config
+      </button>
+      <button class="tab-btn" onclick="showTab('auditoria',this); renderAuditoria()">
+        <i class="fas fa-shield-halved"></i> Auditoría
+      </button>
     </div>
 
-    <!-- TAB PRO -->
-    <div id="panel-pro">
-      <div class="card">
-        <div class="card-title">⚡ Nueva Licencia PRO <span>— Pago / Cliente activo</span></div>
-        <div class="fg">
-          <label class="form-label">Nombre del cliente / Negocio</label>
-          <input type="text" id="pro-negocio" class="form-input" placeholder="Ej: Ferretería El Martillo">
+    <!-- ==================================================
+         TAB: GENERADOR
+    ================================================== -->
+    <div id="tab-generador" class="tab-content active">
+      <div class="gen-grid">
+
+        <!-- Form -->
+        <div class="card">
+          <div class="card-title"><i class="fas fa-plus-circle"></i> Nueva Licencia</div>
+
+          <div class="type-selector">
+            <div class="type-option selected" data-tipo="PRO" onclick="selTipo('PRO',this)">
+              <div class="t-icon"><i class="fas fa-crown"></i></div>
+              <div class="t-name">PRO</div>
+              <div class="t-desc">Permanente</div>
+            </div>
+            <div class="type-option" data-tipo="DEMO" onclick="selTipo('DEMO',this)">
+              <div class="t-icon"><i class="fas fa-clock"></i></div>
+              <div class="t-name">DEMO</div>
+              <div class="t-desc">5 días</div>
+            </div>
+          </div>
+
+          <div class="form-group" id="groupCliente">
+            <label>Nombre del Cliente <small style="color:var(--text-muted);font-size:10px">(requerido para PRO)</small></label>
+            <input type="text" id="inputCliente" class="form-control"
+              placeholder="Ej: Juan García / Ferretería Norte"
+              maxlength="40" autocomplete="off">
+          </div>
+
+          <div class="form-group">
+            <label>Notas <small style="color:var(--text-muted);font-size:10px">(opcional)</small></label>
+            <input type="text" id="inputNotas" class="form-control"
+              placeholder="Teléfono, correo, observaciones..." autocomplete="off">
+          </div>
+
+          <button class="btn-gen" onclick="generarLicencia()">
+            <i class="fas fa-bolt"></i> GENERAR LICENCIA
+          </button>
         </div>
-        <div class="row-2">
-          <div class="fg">
-            <label class="form-label">Duración</label>
-            <select id="pro-meses" class="form-input" onchange="calcVence()">
-              <option value="1">1 mes</option>
-              <option value="3">3 meses</option>
-              <option value="6">6 meses</option>
-              <option value="12" selected>12 meses</option>
-              <option value="24">24 meses</option>
-              <option value="0">Permanente</option>
+
+        <!-- Result -->
+        <div class="card">
+          <div class="card-title"><i class="fas fa-certificate"></i> Resultado</div>
+
+          <div class="result-empty" id="resultEmpty">
+            <i class="fas fa-key"></i>
+            <p>Completa el formulario y presiona<br><strong style="color:var(--cyan)">Generar Licencia</strong></p>
+          </div>
+
+          <div class="result-key-display" id="resultKeyDisplay">
+            <div id="resTypeBadge" class="key-type-badge pro">PRO — Permanente</div>
+            <div class="key-string" id="resKeyStr">—</div>
+
+            <div class="key-meta">
+              <div class="key-meta-row">
+                <span>Cliente</span><span id="resCliente">—</span>
+              </div>
+              <div class="key-meta-row">
+                <span>Tipo</span><span id="resTipo">—</span>
+              </div>
+              <div class="key-meta-row">
+                <span>Generada</span><span id="resFecha">—</span>
+              </div>
+            </div>
+
+            <div class="result-actions">
+              <button class="btn-copy" onclick="copiarActual()">
+                <i class="fas fa-copy"></i> Copiar
+              </button>
+              <a id="btnWapp" href="#" class="btn-wapp" target="_blank" rel="noopener">
+                <i class="fab fa-whatsapp"></i> WhatsApp
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /gen-grid -->
+    </div><!-- /tab-generador -->
+
+    <!-- ==================================================
+         TAB: HISTORIAL
+    ================================================== -->
+    <div id="tab-historial" class="tab-content">
+      <div class="stats-row" id="histStats"></div>
+
+      <div class="hist-controls">
+        <input type="search" id="histBuscar" class="form-control"
+          placeholder="Buscar por cliente o clave..."
+          oninput="renderHistorial()">
+        <select id="histFiltro" class="form-control" onchange="renderHistorial()">
+          <option value="">Todos los tipos</option>
+          <option value="PRO">Solo PRO</option>
+          <option value="DEMO">Solo DEMO</option>
+        </select>
+        <button class="btn-sm btn-danger" onclick="limpiarHistorial()">
+          <i class="fas fa-trash"></i> Limpiar todo
+        </button>
+      </div>
+
+      <div class="hist-wrap" id="histWrap"></div>
+    </div><!-- /tab-historial -->
+
+    <!-- ==================================================
+         TAB: CONFIG
+    ================================================== -->
+    <div id="tab-config" class="tab-content">
+
+      <div class="card" style="margin-bottom:20px">
+        <div class="card-title"><i class="fas fa-lock"></i> Cambiar Contraseña</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-bottom:20px">
+          Contraseña por defecto: <code style="color:var(--cyan);font-family:var(--mono);font-size:13px">FERRADMIN2026</code>
+        </p>
+        <div class="pass-grid">
+          <div class="form-group">
+            <label>Contraseña Actual</label>
+            <input type="password" id="passActual" class="form-control" placeholder="••••••">
+          </div>
+          <div class="form-group">
+            <label>Nueva Contraseña</label>
+            <input type="password" id="passNueva" class="form-control" placeholder="••••••">
+          </div>
+          <div class="form-group">
+            <label>Confirmar Nueva</label>
+            <input type="password" id="passConfirm" class="form-control" placeholder="••••••">
+          </div>
+          <button class="btn-save" onclick="cambiarPass()">
+            <i class="fas fa-floppy-disk"></i> Guardar
+          </button>
+        </div>
+        <div class="msg-box" id="passMsg"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><i class="fas fa-shield-halved"></i> Códigos Master</div>
+        <p style="color:var(--text-dim);font-size:13px;margin-bottom:16px">
+          Siempre válidos sin necesidad de generarlos. Úsalos solo en emergencias.
+        </p>
+        <div class="master-key-item">
+          <span>FERR-MAST-2024</span>
+          <button class="copy-inline" onclick="copiarKey('FERR-MAST-2024')"><i class="fas fa-copy"></i></button>
+        </div>
+        <div class="master-key-item">
+          <span>FERR-A2K-2026</span>
+          <button class="copy-inline" onclick="copiarKey('FERR-A2K-2026')"><i class="fas fa-copy"></i></button>
+        </div>
+        <div class="master-key-item">
+          <span>FERR-GOD-2026</span>
+          <button class="copy-inline" onclick="copiarKey('FERR-GOD-2026')"><i class="fas fa-copy"></i></button>
+        </div>
+      </div>
+
+    </div><!-- /tab-config -->
+
+    <!-- ==================================================
+         TAB: AUDITORÍA DE ACTIVACIONES
+    ================================================== -->
+    <div id="tab-auditoria" class="tab-content">
+
+      <!-- Stats rápidas -->
+      <div class="audit-stats" id="auditStats">
+        <div class="astat"><div class="astat-num" id="aTotal">0</div><div class="astat-lbl">Total</div></div>
+        <div class="astat"><div class="astat-num" id="aPro">0</div><div class="astat-lbl" style="color:var(--cyan)">PRO</div></div>
+        <div class="astat"><div class="astat-num" id="aDemo">0</div><div class="astat-lbl" style="color:var(--amber)">DEMO</div></div>
+        <div class="astat"><div class="astat-num" id="aUltimosDias">0</div><div class="astat-lbl">Últimos 7 días</div></div>
+      </div>
+
+      <!-- Formulario: registrar activación -->
+      <div class="audit-form-card">
+        <div class="audit-form-title"><i class="fas fa-plus-circle"></i> Registrar Activación</div>
+        <div class="audit-grid">
+          <div class="form-group">
+            <label>Nombre / Negocio *</label>
+            <input type="text" id="auNegocio" class="form-control" placeholder="Ej: Ferretería Norte" maxlength="80">
+          </div>
+          <div class="form-group">
+            <label>Tipo de Licencia</label>
+            <select id="auTipo" class="form-control">
+              <option value="PRO">PRO — Permanente</option>
+              <option value="DEMO">DEMO — 5 días</option>
             </select>
           </div>
-          <div class="fg">
-            <label class="form-label">Vence el</label>
-            <input type="text" id="pro-vence" class="form-input" readonly style="background:var(--bg3);color:var(--neon);">
+          <div class="form-group">
+            <label>Correo Electrónico</label>
+            <input type="email" id="auEmail" class="form-control" placeholder="correo@ejemplo.com" maxlength="100">
+          </div>
+          <div class="form-group">
+            <label>Teléfono / WhatsApp</label>
+            <input type="tel" id="auTel" class="form-control" placeholder="+58 416-0000000" maxlength="25">
+          </div>
+          <div class="form-group full">
+            <label>ID de Dispositivo *</label>
+            <input type="text" id="auDeviceId" class="form-control" placeholder="FPxxxx-xxxx-xxxx-xxxx" maxlength="30" style="font-family:var(--mono);font-size:13px">
+          </div>
+          <div class="form-group full">
+            <label>Clave Generada</label>
+            <input type="text" id="auClave" class="form-control" placeholder="FERR-PRO-XXXXXX-0000-0000" maxlength="30" style="font-family:var(--mono);font-size:13px">
+          </div>
+          <div class="form-group full">
+            <label>Notas</label>
+            <input type="text" id="auNotas" class="form-control" placeholder="Ciudad, referido, método de pago, monto..." maxlength="200">
           </div>
         </div>
-        <button class="btn btn-primary btn-full" style="height:44px;font-size:15px" onclick="generarPRO()">
-          ⚡ Generar Código PRO
-        </button>
-        <div class="result-box" id="pro-resultado">
-          <div class="result-code" id="pro-code"></div>
-          <div class="result-info" id="pro-info"></div>
-          <div class="result-actions">
-            <button class="btn btn-ghost btn-sm" onclick="copiar('pro-code')">📋 Copiar</button>
-            <button class="btn btn-ghost btn-sm" style="color:var(--neon)" onclick="compartirWA('pro')">💬 WhatsApp</button>
-          </div>
+        <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn-gen" style="flex:1;min-width:160px" onclick="registrarActivacion()">
+            <i class="fas fa-floppy-disk"></i> GUARDAR ACTIVACIÓN
+          </button>
+          <button class="btn-save" style="flex:none;padding:10px 18px" onclick="exportarAuditoria()">
+            <i class="fas fa-file-csv"></i> Exportar CSV
+          </button>
         </div>
+        <div class="msg-box" id="auMsg"></div>
       </div>
-    </div>
 
-    <!-- TAB DEMO -->
-    <div id="panel-demo" style="display:none">
-      <div class="card">
-        <div class="card-title">🎯 Nueva Licencia DEMO <span>— 5 días desde primer uso</span></div>
-        <div class="fg">
-          <label class="form-label">Nombre del cliente / Negocio (referencia)</label>
-          <input type="text" id="demo-negocio" class="form-input" placeholder="Ej: Ferretería Las Herramientas">
-        </div>
-        <div class="fg" style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px">
-          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--warn)">
-            <span style="font-size:18px">⏳</span>
-            <span><strong>5 días</strong> de acceso desde que el cliente ingrese el código por primera vez.</span>
-          </div>
-          <div style="font-size:12px;color:var(--text2);margin-top:6px;">
-            Al vencer, la app se bloquea completamente. Los datos del cliente se conservan intactos.
-          </div>
-        </div>
-        <button class="btn btn-warn btn-full" style="height:44px;font-size:15px;margin-top:14px" onclick="generarDEMO()">
-          🎯 Generar Código DEMO
-        </button>
-        <div class="result-box" id="demo-resultado" style="border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05)">
-          <div class="result-code result-code-demo" id="demo-code"></div>
-          <div class="result-info" id="demo-info"></div>
-          <div class="result-actions">
-            <button class="btn btn-ghost btn-sm" onclick="copiar('demo-code')">📋 Copiar</button>
-            <button class="btn btn-ghost btn-sm" style="color:var(--warn)" onclick="compartirWA('demo')">💬 WhatsApp</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB LISTA -->
-    <div id="panel-lista" style="display:none">
-      <div class="tbar">
-        <div class="tbar-title">📋 Licencias generadas <span id="lic-count" style="color:var(--text2);font-weight:400;font-size:13px"></span></div>
-        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-          <input type="text" id="lic-search" class="search-inp" placeholder="🔍 Buscar..." oninput="renderTabla()">
-          <select id="lic-filtro" class="form-input" style="width:120px;padding:7px 10px;font-size:13px" onchange="renderTabla()">
-            <option value="">Todas</option>
-            <option value="PRO">Solo PRO</option>
-            <option value="DEMO">Solo DEMO</option>
-            <option value="activa">Activas</option>
-            <option value="vencida">Vencidas</option>
+      <!-- Tabla de activaciones -->
+      <div class="audit-table-wrap">
+        <div class="audit-toolbar">
+          <input class="audit-search" id="auBuscar" type="text" placeholder="Buscar por negocio, Device ID, clave..."
+            oninput="renderAuditoria()">
+          <select class="form-control" id="auFiltroTipo" style="width:auto;padding:9px 12px" onchange="renderAuditoria()">
+            <option value="">Todos</option>
+            <option value="PRO">PRO</option>
+            <option value="DEMO">DEMO</option>
           </select>
-          <button class="btn btn-danger btn-sm" onclick="limpiarVencidas()">🗑️ Eliminar vencidas</button>
+          <button class="btn-save" style="padding:9px 14px;font-size:12px" onclick="limpiarAuditoria()">
+            <i class="fas fa-trash"></i> Limpiar
+          </button>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Fecha</th>
+                <th>Negocio</th>
+                <th>Tipo</th>
+                <th>Device ID</th>
+                <th>Clave</th>
+                <th>Tel / Email</th>
+                <th>Notas</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="auTablaBody"></tbody>
+          </table>
+          <div id="auEmpty" class="audit-empty" style="display:none">
+            <i class="fas fa-shield-halved" style="font-size:28px;margin-bottom:10px;display:block;opacity:0.3"></i>
+            Sin activaciones registradas.
+          </div>
         </div>
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Tipo</th>
-              <th>Cliente</th>
-              <th>Vence</th>
-              <th>Estado</th>
-              <th>Generado</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="lic-tbody">
-          </tbody>
-        </table>
-      </div>
-    </div>
 
-  </div>
+    </div><!-- /tab-auditoria -->
+
+  </div><!-- /panel-body -->
+</div><!-- /screenPanel -->
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <i class="fas fa-circle-check" id="toastIcon"></i>
+  <span id="toastMsg">Copiado al portapapeles</span>
 </div>
 
-<div id="toast-wrap"></div>
-
 <script>
-// ══ CONSTANTES ══
-var _ADMIN_PW = 'FZADMIN2026';
-var _ADMIN_CODES = ['FZ-ADMIN-2026', 'FZADMIN2026'];
-var _LS_PREFIX = 'fz_';
-var _SESSION_KEY = 'fz_panel_admin_session';
-var _LAST_PRO = '', _LAST_DEMO = '';
+// ============================================================
+//  CONSTANTS
+// ============================================================
+const ADMIN_PASS_KEY = 'ferr_admin_pass';
+const HIST_KEY       = 'ferr_licencias_generadas';
+const DEFAULT_PASS   = 'FERRADMIN2026';
 
-// ══ STORAGE ══
-var DB = {
-  get: function(k){ try{ var v = localStorage.getItem(_LS_PREFIX+k); return v ? JSON.parse(v) : null; }catch(e){ return null; } },
-  set: function(k,v){ try{ localStorage.setItem(_LS_PREFIX+k, JSON.stringify(v)); }catch(e){} },
-  remove: function(k){ localStorage.removeItem(_LS_PREFIX+k); }
+let currentKey  = null;
+let currentTipo = 'PRO';
+
+// ============================================================
+//  DB
+// ============================================================
+const DB = {
+  get(k, d = null) {
+    try { const v = localStorage.getItem(k); return v !== null ? JSON.parse(v) : d; } catch { return d; }
+  },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} },
+  push(k, item, max = 2000) {
+    const a = this.get(k, []); a.unshift(item);
+    if (a.length > max) a.length = max;
+    this.set(k, a);
+  }
 };
 
-// ══ TOAST ══
-function toast(msg, type){
-  var c = document.getElementById('toast-wrap');
-  var t = document.createElement('div');
-  t.className = 'toast toast-' + (type||'info');
-  t.textContent = msg;
-  c.appendChild(t);
-  setTimeout(function(){ t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all .3s'; setTimeout(function(){t.remove();},300); }, 2800);
+// ============================================================
+//  IRON LOCK V2 — same algorithm as index.html
+// ============================================================
+function ironCheck(body) {
+  let s = 0;
+  for (const c of body) s += c.charCodeAt(0);
+  return (s % 9999).toString().padStart(4, '0');
 }
 
-// ══ LOGIN ══
-function doLogin(){
-  var pw = (document.getElementById('adminPw').value||'').trim().toUpperCase();
-  if(!pw){ showErr('Ingresa la contraseña'); return; }
-  var ok = _ADMIN_CODES.indexOf(pw) !== -1;
-  if(!ok){ showErr('❌ Contraseña incorrecta'); document.getElementById('adminPw').value=''; return; }
-  sessionStorage.setItem(_SESSION_KEY, '1');
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('app').style.display = 'flex';
-  calcVence();
-  renderStats();
-  renderTabla();
-}
-function showErr(msg){
-  var e = document.getElementById('loginErr');
-  e.textContent = msg; e.style.display = 'block';
-  setTimeout(function(){ e.style.display='none'; }, 3500);
-}
-function doLogout(){
-  sessionStorage.removeItem(_SESSION_KEY);
-  location.reload();
+function randAlpha(n) {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let r = '';
+  for (let i = 0; i < n; i++) r += chars[Math.floor(Math.random() * chars.length)];
+  return r;
 }
 
-// ══ TABS ══
-var _activeTab = 'pro';
-function switchTab(tab){
-  _activeTab = tab;
-  ['pro','demo','lista'].forEach(function(t){
-    document.getElementById('panel-'+t).style.display = t===tab ? 'block' : 'none';
-    document.getElementById('tab-'+t).className = 'tab-btn' + (t===tab?' active':'');
-  });
-  if(tab==='lista') renderTabla();
+function buildProKey(nombre) {
+  const client6 = nombre.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6).padEnd(6, 'X');
+  const rand4   = randAlpha(4);
+  const body    = `FERR-PRO-${client6}-${rand4}`;
+  return `${body}-${ironCheck(body)}`;
 }
 
-// ══ CALC VENCE ══
-function calcVence(){
-  var m = parseInt((document.getElementById('pro-meses')||{}).value)||12;
-  var el = document.getElementById('pro-vence'); if(!el) return;
-  if(m===0){ el.value = 'Permanente (2099-12-31)'; return; }
-  var d = new Date(); d.setMonth(d.getMonth()+m);
-  el.value = d.toISOString().slice(0,10);
+function buildDemoKey() {
+  const rand6 = randAlpha(6);
+  const rand4 = randAlpha(4);
+  const body  = `FERR-DEMO-${rand6}-${rand4}`;
+  return `${body}-${ironCheck(body)}`;
 }
 
-// ══ GENERAR PRO ══
-function generarPRO(){
-  var negocio = (document.getElementById('pro-negocio').value||'').trim() || 'Cliente';
-  var meses = parseInt(document.getElementById('pro-meses').value)||12;
-  var vd = new Date();
-  if(meses > 0) vd.setMonth(vd.getMonth()+meses);
-  else vd = new Date('2099-12-31');
+// ============================================================
+//  AUTH
+// ============================================================
+function getAdminPass() { return DB.get(ADMIN_PASS_KEY, DEFAULT_PASS); }
 
-  var code = 'FZ-PRO-' + Math.random().toString(36).toUpperCase().slice(2,8);
-  var lic = { code: code, tipo: 'PRO', cliente: negocio, vence: vd.toISOString().slice(0,10), ts: Date.now() };
-
-  var lics = DB.get('licencias_generadas') || [];
-  lics.push(lic);
-  DB.set('licencias_generadas', lics);
-
-  _LAST_PRO = code;
-  document.getElementById('pro-code').textContent = code;
-  document.getElementById('pro-info').textContent =
-    'Cliente: ' + negocio + ' · Vence: ' + vd.toISOString().slice(0,10) + (meses===0?' (Permanente)':'');
-  document.getElementById('pro-resultado').style.display = 'block';
-  renderStats();
-  toast('✅ Licencia PRO generada', 'success');
-}
-
-// ══ GENERAR DEMO ══
-function generarDEMO(){
-  var negocio = (document.getElementById('demo-negocio').value||'').trim() || 'Cliente Demo';
-  var vd = new Date(); vd.setDate(vd.getDate()+5);
-
-  var code = 'FZ-DEMO-' + Math.random().toString(36).toUpperCase().slice(2,8);
-  var lic = { code: code, tipo: 'DEMO', cliente: negocio, vence: vd.toISOString().slice(0,10), ts: Date.now() };
-
-  var lics = DB.get('licencias_generadas') || [];
-  lics.push(lic);
-  DB.set('licencias_generadas', lics);
-
-  _LAST_DEMO = code;
-  document.getElementById('demo-code').textContent = code;
-  document.getElementById('demo-info').textContent =
-    'Cliente: ' + negocio + ' · Expira 5 días desde primer uso';
-  document.getElementById('demo-resultado').style.display = 'block';
-  renderStats();
-  toast('🎯 Licencia DEMO generada (5 días)', 'success');
-}
-
-// ══ COPIAR ══
-function copiar(elId){
-  var txt = document.getElementById(elId).textContent;
-  navigator.clipboard.writeText(txt).then(function(){ toast('📋 Copiado al portapapeles', 'success'); });
-}
-
-// ══ COMPARTIR WA ══
-function compartirWA(tipo){
-  var code = tipo==='pro' ? _LAST_PRO : _LAST_DEMO;
-  if(!code){ toast('Primero genera un código','warning'); return; }
-  var msg;
-  if(tipo==='pro'){
-    msg = '¡Hola! 🔑 Tu licencia *PRO* para *Ferretería Zync*:\n\n' +
-          '*' + code + '*\n\n' +
-          'Ingresa este código en la app para activarla.\n' +
-          '✅ A2K Digital Studio';
+function intentarLogin() {
+  const val = document.getElementById('inputPass').value;
+  const errEl = document.getElementById('loginError');
+  if (val === getAdminPass()) {
+    document.getElementById('screenLogin').classList.remove('active');
+    document.getElementById('screenPanel').classList.add('active');
+    errEl.classList.remove('show');
+    renderHistorialStats();
+    renderHistorial();
   } else {
-    msg = '¡Hola! 🎯 Tu licencia *DEMO* para *Ferretería Zync*:\n\n' +
-          '*' + code + '*\n\n' +
-          '⏳ Tendrás *5 días* de acceso completo desde que lo ingreses.\n' +
-          'Ingresa el código en la app para empezar.\n' +
-          '— A2K Digital Studio';
+    errEl.classList.add('show');
+    document.getElementById('inputPass').value = '';
+    document.getElementById('inputPass').focus();
   }
-  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
 }
 
-// ══ RENDER STATS ══
-function renderStats(){
-  var lics = DB.get('licencias_generadas') || [];
-  var hoy = new Date();
-  var demos = lics.filter(function(l){ return l.tipo==='DEMO' && new Date(l.vence) >= hoy; }).length;
-  var venc = lics.filter(function(l){ return new Date(l.vence) < hoy; }).length;
-  document.getElementById('stat-total').textContent = lics.length;
-  document.getElementById('stat-demo').textContent = demos;
-  document.getElementById('stat-exp').textContent = venc;
+function cerrarSesion() {
+  document.getElementById('screenPanel').classList.remove('active');
+  document.getElementById('screenLogin').classList.add('active');
+  document.getElementById('inputPass').value = '';
+  currentKey = null;
 }
 
-// ══ RENDER TABLA ══
-function renderTabla(){
-  var lics = DB.get('licencias_generadas') || [];
-  var q = ((document.getElementById('lic-search')||{}).value||'').toLowerCase();
-  var filtro = (document.getElementById('lic-filtro')||{}).value || '';
-  var hoy = new Date();
+document.getElementById('inputPass').addEventListener('keydown', e => {
+  if (e.key === 'Enter') intentarLogin();
+});
 
-  var f = lics.filter(function(l){
-    var exp = new Date(l.vence) < hoy;
-    if(filtro==='PRO' && l.tipo!=='PRO') return false;
-    if(filtro==='DEMO' && l.tipo!=='DEMO') return false;
-    if(filtro==='activa' && exp) return false;
-    if(filtro==='vencida' && !exp) return false;
-    if(q && !(l.code.toLowerCase().includes(q) || (l.cliente||'').toLowerCase().includes(q))) return false;
-    return true;
-  });
+// ============================================================
+//  TABS
+// ============================================================
+function showTab(id, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  el.classList.add('active');
+  if (id === 'historial') { renderHistorialStats(); renderHistorial(); }
+}
 
-  var cnt = document.getElementById('lic-count');
-  if(cnt) cnt.textContent = '(' + f.length + ' de ' + lics.length + ')';
+// ============================================================
+//  TYPE SELECTOR
+// ============================================================
+function selTipo(tipo, el) {
+  currentTipo = tipo;
+  document.querySelectorAll('.type-option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  const grp = document.getElementById('groupCliente');
+  grp.style.display = tipo === 'PRO' ? '' : 'none';
+}
 
-  var tbody = document.getElementById('lic-tbody');
-  if(!tbody) return;
+// ============================================================
+//  GENERATE
+// ============================================================
+function generarLicencia() {
+  const notasEl   = document.getElementById('inputNotas');
+  const clienteEl = document.getElementById('inputCliente');
+  let cliente     = clienteEl.value.trim();
+  const notas     = notasEl.value.trim();
 
-  if(!f.length){
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:28px;color:var(--text3)">Sin licencias registradas</td></tr>';
+  if (currentTipo === 'PRO' && !cliente) {
+    toast('Ingresa el nombre del cliente para generar una licencia PRO', 'error');
+    clienteEl.focus();
     return;
   }
 
-  tbody.innerHTML = f.slice().reverse().map(function(l){
-    var exp = new Date(l.vence) < hoy;
-    var badge = exp
-      ? '<span class="badge badge-exp">VENCIDA</span>'
-      : l.tipo==='PRO'
-        ? '<span class="badge badge-pro">PRO</span>'
-        : '<span class="badge badge-demo">DEMO</span>';
-    var estado = exp
-      ? '<span style="color:var(--danger);font-size:12px">❌ Vencida</span>'
-      : '<span style="color:var(--neon);font-size:12px">✅ Activa</span>';
-    return '<tr>' +
-      '<td class="code-mono" style="color:' + (exp?'var(--danger)':l.tipo==='PRO'?'var(--neon)':'var(--warn)') + '">' + l.code + '</td>' +
-      '<td>' + badge + '</td>' +
-      '<td style="font-size:13px">' + (l.cliente||'—') + '</td>' +
-      '<td style="font-size:12px;color:var(--text2)">' + (l.vence||'—') + '</td>' +
-      '<td>' + estado + '</td>' +
-      '<td style="font-size:11px;color:var(--text3)">' + (l.ts ? new Date(l.ts).toLocaleDateString('es-VE') : '—') + '</td>' +
-      '<td>' +
-        '<button class="btn btn-ghost btn-sm" title="Copiar" onclick="navigator.clipboard.writeText(\'' + l.code + '\').then(function(){toast(\'📋 Copiado\',\'success\')})">📋</button>' +
-        ' <button class="btn btn-sm" style="background:rgba(239,68,68,.15);color:var(--danger);border:none" title="Eliminar" onclick="eliminarLic(\'' + l.code + '\')">🗑️</button>' +
-      '</td>' +
-    '</tr>';
+  const key   = currentTipo === 'PRO' ? buildProKey(cliente) : buildDemoKey();
+  const fecha = new Date().toLocaleString('es-VE', { dateStyle: 'short', timeStyle: 'short' });
+  currentKey  = key;
+
+  if (currentTipo === 'DEMO') cliente = '— (anónima)';
+
+  // Persist
+  DB.push(HIST_KEY, { key, tipo: currentTipo, cliente, notas, fecha });
+
+  // Render result
+  document.getElementById('resultEmpty').style.display = 'none';
+  const display = document.getElementById('resultKeyDisplay');
+  display.style.display = 'block';
+
+  const badge = document.getElementById('resTypeBadge');
+  if (currentTipo === 'PRO') {
+    badge.textContent = 'PRO — Permanente';
+    badge.className = 'key-type-badge pro';
+  } else {
+    badge.textContent = 'DEMO — 5 días';
+    badge.className = 'key-type-badge demo';
+  }
+
+  document.getElementById('resKeyStr').textContent  = key;
+  document.getElementById('resCliente').textContent = cliente;
+  document.getElementById('resTipo').textContent    = currentTipo === 'PRO' ? 'PRO Permanente' : 'Demo 5 días';
+  document.getElementById('resFecha').textContent   = fecha;
+
+  const msg = encodeURIComponent(
+    `🔑 *Licencia Ferretería Pro*\n\n` +
+    `Tipo: *${currentTipo === 'PRO' ? 'PRO — Permanente' : 'DEMO — 5 días'}*\n` +
+    (currentTipo === 'PRO' ? `Cliente: *${clienteEl.value.trim()}*\n` : '') +
+    `\nClave:\n\`${key}\`\n\n` +
+    `_Powered by A2K Digital Studio_ 🛠️`
+  );
+  document.getElementById('btnWapp').href = `https://wa.me/?text=${msg}`;
+
+  toast('Licencia generada correctamente');
+}
+
+// ============================================================
+//  COPY
+// ============================================================
+function copiarActual() {
+  if (!currentKey) return;
+  navigator.clipboard.writeText(currentKey)
+    .then(() => toast('Clave copiada al portapapeles'))
+    .catch(() => toast('No se pudo copiar', 'error'));
+}
+
+function copiarKey(key) {
+  navigator.clipboard.writeText(key)
+    .then(() => toast('Clave copiada'))
+    .catch(() => toast('No se pudo copiar', 'error'));
+}
+
+// ============================================================
+//  HISTORIAL
+// ============================================================
+function renderHistorialStats() {
+  const all  = DB.get(HIST_KEY, []);
+  const pro  = all.filter(x => x.tipo === 'PRO').length;
+  const demo = all.filter(x => x.tipo === 'DEMO').length;
+
+  document.getElementById('histStats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(0,229,255,0.1);color:var(--cyan)">
+        <i class="fas fa-key"></i>
+      </div>
+      <div>
+        <div class="stat-val" style="color:var(--text)">${all.length}</div>
+        <div class="stat-lbl">Total Generadas</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(0,229,255,0.1);color:var(--cyan)">
+        <i class="fas fa-crown"></i>
+      </div>
+      <div>
+        <div class="stat-val" style="color:var(--cyan)">${pro}</div>
+        <div class="stat-lbl">Licencias PRO</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon" style="background:rgba(255,214,0,0.1);color:var(--amber)">
+        <i class="fas fa-clock"></i>
+      </div>
+      <div>
+        <div class="stat-val" style="color:var(--amber)">${demo}</div>
+        <div class="stat-lbl">Licencias DEMO</div>
+      </div>
+    </div>
+  `;
+}
+
+function renderHistorial() {
+  const all    = DB.get(HIST_KEY, []);
+  const query  = (document.getElementById('histBuscar')?.value || '').toLowerCase().trim();
+  const filtro = document.getElementById('histFiltro')?.value || '';
+  const wrap   = document.getElementById('histWrap');
+
+  let rows = all;
+  if (filtro) rows = rows.filter(r => r.tipo === filtro);
+  if (query)  rows = rows.filter(r =>
+    r.key.toLowerCase().includes(query) ||
+    (r.cliente || '').toLowerCase().includes(query) ||
+    (r.notas   || '').toLowerCase().includes(query)
+  );
+
+  if (!rows.length) {
+    wrap.innerHTML = `
+      <div class="hist-empty">
+        <i class="fas fa-inbox"></i>
+        ${query || filtro ? 'Sin resultados para este filtro' : 'Aún no se han generado licencias'}
+      </div>`;
+    return;
+  }
+
+  const trs = rows.map(r => `
+    <tr>
+      <td class="key-cell">${escHtml(r.key)}</td>
+      <td><span class="badge badge-${r.tipo.toLowerCase()}">${r.tipo}</span></td>
+      <td style="color:var(--text)">${escHtml(r.cliente || '—')}</td>
+      <td style="color:var(--text-dim);font-size:12px">${escHtml(r.notas || '—')}</td>
+      <td style="color:var(--text-muted);font-size:12px;white-space:nowrap">${r.fecha}</td>
+      <td>
+        <button class="copy-inline" onclick="copiarKey(${JSON.stringify(r.key)})">
+          <i class="fas fa-copy"></i> Copiar
+        </button>
+      </td>
+    </tr>
+  `).join('');
+
+  wrap.innerHTML = `
+    <table class="hist-table">
+      <thead>
+        <tr>
+          <th>Clave</th>
+          <th>Tipo</th>
+          <th>Cliente</th>
+          <th>Notas</th>
+          <th>Fecha</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>${trs}</tbody>
+    </table>
+  `;
+}
+
+function limpiarHistorial() {
+  if (!confirm('¿Eliminar todo el historial de licencias generadas?\n\nEsta acción no se puede deshacer.')) return;
+  DB.set(HIST_KEY, []);
+  renderHistorialStats();
+  renderHistorial();
+  toast('Historial eliminado', 'warn');
+}
+
+// ============================================================
+//  CONFIG — CHANGE PASSWORD
+// ============================================================
+function cambiarPass() {
+  const actual   = document.getElementById('passActual').value;
+  const nueva    = document.getElementById('passNueva').value;
+  const confirm  = document.getElementById('passConfirm').value;
+  const msgEl    = document.getElementById('passMsg');
+
+  const mostrar = (txt, ok) => {
+    msgEl.style.display    = 'block';
+    msgEl.style.background = ok ? 'rgba(0,255,136,0.07)' : 'rgba(255,68,85,0.07)';
+    msgEl.style.border     = `1px solid ${ok ? 'rgba(0,255,136,0.3)' : 'rgba(255,68,85,0.3)'}`;
+    msgEl.style.color      = ok ? 'var(--green)' : 'var(--red)';
+    msgEl.textContent      = txt;
+    setTimeout(() => { msgEl.style.display = 'none'; }, 3500);
+  };
+
+  if (actual !== getAdminPass()) return mostrar('Contraseña actual incorrecta', false);
+  if (!nueva || nueva.length < 6) return mostrar('La nueva contraseña debe tener al menos 6 caracteres', false);
+  if (nueva !== confirm)          return mostrar('Las contraseñas no coinciden', false);
+
+  DB.set(ADMIN_PASS_KEY, nueva);
+  mostrar('Contraseña actualizada correctamente', true);
+  ['passActual', 'passNueva', 'passConfirm'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+}
+
+// ============================================================
+//  TOAST
+// ============================================================
+let toastTimer;
+function toast(msg, type = 'ok') {
+  const el  = document.getElementById('toast');
+  const ico = document.getElementById('toastIcon');
+  document.getElementById('toastMsg').textContent = msg;
+
+  if (type === 'error') {
+    el.style.borderColor = 'rgba(255,68,85,0.6)';
+    el.style.color       = 'var(--red)';
+    ico.className        = 'fas fa-circle-xmark';
+  } else if (type === 'warn') {
+    el.style.borderColor = 'rgba(255,214,0,0.6)';
+    el.style.color       = 'var(--amber)';
+    ico.className        = 'fas fa-triangle-exclamation';
+  } else {
+    el.style.borderColor = 'var(--green-dim)';
+    el.style.color       = 'var(--green)';
+    ico.className        = 'fas fa-circle-check';
+  }
+
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ============================================================
+//  UTILS
+// ============================================================
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ============================================================
+//  AUDITORÍA DE ACTIVACIONES
+// ============================================================
+const AUDIT_KEY = 'ferr_audit_activaciones';
+
+function showMsg(id, txt, ok = true) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = txt;
+  el.style.cssText = `display:block;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:12px;font-weight:600;${ok?'background:rgba(0,255,136,0.08);border:1px solid rgba(0,255,136,0.25);color:#00ff88':'background:rgba(255,68,85,0.08);border:1px solid rgba(255,68,85,0.25);color:#ff4455'}`;
+  setTimeout(() => { el.style.display='none'; }, 3500);
+}
+
+function registrarActivacion() {
+  const negocio  = document.getElementById('auNegocio').value.trim();
+  const deviceId = document.getElementById('auDeviceId').value.trim();
+  const tipo     = document.getElementById('auTipo').value;
+  const email    = document.getElementById('auEmail').value.trim();
+  const tel      = document.getElementById('auTel').value.trim();
+  const clave    = document.getElementById('auClave').value.trim().toUpperCase();
+  const notas    = document.getElementById('auNotas').value.trim();
+
+  if (!negocio) { showMsg('auMsg', '⚠ El nombre del negocio es obligatorio.', false); return; }
+  if (!deviceId) { showMsg('auMsg', '⚠ El Device ID es obligatorio.', false); return; }
+
+  DB.push(AUDIT_KEY, {
+    id:        Date.now(),
+    negocio, tipo, email, tel, clave, deviceId, notas,
+    fecha:     new Date().toISOString()
+  }, 5000);
+
+  // Limpiar campos
+  ['auNegocio','auDeviceId','auEmail','auTel','auClave','auNotas'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('auTipo').value = 'PRO';
+
+  showMsg('auMsg', '✅ Activación registrada correctamente.');
+  renderAuditoria();
+}
+
+function renderAuditoria() {
+  const all    = DB.get(AUDIT_KEY, []);
+  const buscar = (document.getElementById('auBuscar')?.value || '').toLowerCase();
+  const tipo   = document.getElementById('auFiltroTipo')?.value || '';
+
+  // Stats
+  const ahora   = Date.now();
+  const siete   = 7 * 864e5;
+  const recientes = all.filter(x => ahora - new Date(x.fecha).getTime() < siete).length;
+  document.getElementById('aTotal').textContent      = all.length;
+  document.getElementById('aPro').textContent        = all.filter(x=>x.tipo==='PRO').length;
+  document.getElementById('aDemo').textContent       = all.filter(x=>x.tipo==='DEMO').length;
+  document.getElementById('aUltimosDias').textContent = recientes;
+
+  // Filtrar
+  let filtered = all.filter(x => {
+    const match = !buscar ||
+      (x.negocio||'').toLowerCase().includes(buscar) ||
+      (x.deviceId||'').toLowerCase().includes(buscar) ||
+      (x.clave||'').toLowerCase().includes(buscar) ||
+      (x.email||'').toLowerCase().includes(buscar);
+    const tipoOk = !tipo || x.tipo === tipo;
+    return match && tipoOk;
+  });
+
+  const tbody = document.getElementById('auTablaBody');
+  const empty = document.getElementById('auEmpty');
+
+  if (!filtered.length) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = filtered.map((x, i) => {
+    const fecha = new Date(x.fecha).toLocaleDateString('es-VE', { day:'2-digit', month:'short', year:'numeric' });
+    const hora  = new Date(x.fecha).toLocaleTimeString('es-VE', { hour:'2-digit', minute:'2-digit' });
+    const badge = x.tipo === 'PRO'
+      ? `<span class="badge-pro">PRO</span>`
+      : `<span class="badge-demo">DEMO</span>`;
+    return `<tr>
+      <td class="dim">${filtered.length - i}</td>
+      <td class="dim">${fecha}<br><span style="font-size:10px">${hora}</span></td>
+      <td><strong>${esc(x.negocio||'—')}</strong></td>
+      <td>${badge}</td>
+      <td class="mono">${esc(x.deviceId||'—')}</td>
+      <td class="mono" style="color:var(--text-dim);font-size:10px">${esc(x.clave||'—')}</td>
+      <td class="dim">${esc(x.tel||'—')}<br>${esc(x.email||'')}</td>
+      <td class="dim" style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(x.notas||'')}">${esc(x.notas||'—')}</td>
+      <td><button class="btn-del-audit" onclick="eliminarActivacion(${x.id})" title="Eliminar"><i class="fas fa-trash-can"></i></button></td>
+    </tr>`;
   }).join('');
 }
 
-// ══ ELIMINAR LICENCIA ══
-function eliminarLic(code){
-  if(!confirm('¿Eliminar la licencia ' + code + '?\nSi el cliente la tiene activa dejará de funcionar.')) return;
-  var lics = (DB.get('licencias_generadas')||[]).filter(function(l){ return l.code !== code; });
-  DB.set('licencias_generadas', lics);
-  renderTabla(); renderStats();
-  toast('🗑️ Licencia eliminada', 'info');
+function eliminarActivacion(id) {
+  if (!confirm('¿Eliminar este registro de auditoría?')) return;
+  const all = DB.get(AUDIT_KEY, []).filter(x => x.id !== id);
+  DB.set(AUDIT_KEY, all);
+  renderAuditoria();
 }
 
-// ══ LIMPIAR VENCIDAS ══
-function limpiarVencidas(){
-  var lics = DB.get('licencias_generadas') || [];
-  var hoy = new Date();
-  var activas = lics.filter(function(l){ return new Date(l.vence) >= hoy; });
-  var n = lics.length - activas.length;
-  if(!n){ toast('No hay licencias vencidas', 'info'); return; }
-  if(!confirm('¿Eliminar ' + n + ' licencia(s) vencida(s)?')) return;
-  DB.set('licencias_generadas', activas);
-  renderTabla(); renderStats();
-  toast('🗑️ ' + n + ' licencia(s) vencida(s) eliminadas', 'success');
+function limpiarAuditoria() {
+  if (!confirm('¿Eliminar TODOS los registros de auditoría? Esta acción no se puede deshacer.')) return;
+  DB.set(AUDIT_KEY, []);
+  renderAuditoria();
 }
 
-// ══ INIT ══
-(function(){
-  if(sessionStorage.getItem(_SESSION_KEY)==='1'){
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('app').style.display = 'flex';
-    calcVence(); renderStats(); renderTabla();
-  }
-  document.getElementById('adminPw').focus();
-})();
+function exportarAuditoria() {
+  const all = DB.get(AUDIT_KEY, []);
+  if (!all.length) { showMsg('auMsg', 'No hay registros para exportar.', false); return; }
+  const hdr = ['Fecha','Negocio','Tipo','Device ID','Clave','Telefono','Email','Notas'];
+  const rows = all.map(x => [
+    new Date(x.fecha).toLocaleString('es-VE'),
+    x.negocio||'', x.tipo||'', x.deviceId||'', x.clave||'',
+    x.tel||'', x.email||'', x.notas||''
+  ].map(v => `"${v.replace(/"/g,'""')}"`).join(','));
+  const csv  = [hdr.join(','), ...rows].join('\n');
+  const blob = new Blob(['﻿'+csv], { type:'text/csv;charset=utf-8;' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = `auditoria_ferreteria_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
 </script>
 </body>
 </html>
