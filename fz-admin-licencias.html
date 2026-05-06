@@ -833,6 +833,90 @@
     }
     .astat-num { font-family: var(--mono); font-size: 22px; font-weight: 700; color: var(--cyan); }
     .astat-lbl { font-size: 10px; color: var(--text-muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* === CRM ============================================================ */
+    .crm-toolbar {
+      display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 18px;
+    }
+    .crm-search {
+      flex: 1; min-width: 200px; background: var(--bg3);
+      border: 1px solid var(--border); color: var(--text);
+      padding: 9px 14px; border-radius: var(--r-sm); font-size: 13px; outline: none;
+    }
+    .crm-search:focus { border-color: var(--cyan); }
+    .crm-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+    .crm-chip {
+      background: var(--bg3); border: 1px solid var(--border); color: var(--text-dim);
+      border-radius: 20px; padding: 6px 14px; font-size: 11px; font-weight: 700;
+      cursor: pointer; transition: var(--t); letter-spacing: .5px;
+    }
+    .crm-chip:hover { border-color: var(--cyan); color: var(--text); }
+    .crm-chip.active { background: rgba(0,229,255,.12); border-color: var(--cyan); color: var(--cyan); }
+    .crm-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px;
+    }
+    .crm-card {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 16px; transition: var(--t);
+    }
+    .crm-card:hover { border-color: rgba(0,229,255,.35); background: var(--bg3); }
+    .crm-card-head {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      gap: 10px; margin-bottom: 12px;
+    }
+    .crm-negocio {
+      font-weight: 700; font-size: 15px; color: var(--text); line-height: 1.3;
+      word-break: break-word;
+    }
+    .crm-device {
+      font-family: var(--mono); font-size: 10px; color: var(--cyan);
+      margin-top: 3px; word-break: break-all;
+    }
+    .badge-vigente { background: rgba(0,255,136,.1); color: var(--green); padding: 3px 9px; border-radius: 10px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+    .badge-vencido { background: rgba(255,68,85,.1); color: var(--red); padding: 3px 9px; border-radius: 10px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+    .badge-pro-act  { background: rgba(0,229,255,.1); color: var(--cyan); padding: 3px 9px; border-radius: 10px; font-size: 10px; font-weight: 700; white-space: nowrap; }
+    .crm-meta {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px;
+      margin-bottom: 12px; font-size: 11px;
+    }
+    .crm-meta-row { color: var(--text-muted); }
+    .crm-meta-row b { color: var(--text-dim); font-weight: 600; display: block; }
+    .crm-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-wa {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(37,211,102,.13); border: 1px solid rgba(37,211,102,.3);
+      color: #25d366; border-radius: var(--r-sm); padding: 7px 13px;
+      font-size: 12px; font-weight: 700; text-decoration: none; transition: var(--t); cursor: pointer;
+    }
+    .btn-wa:hover { background: rgba(37,211,102,.22); }
+    .btn-copy-did {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(0,229,255,.07); border: 1px solid var(--border);
+      color: var(--cyan); border-radius: var(--r-sm); padding: 7px 13px;
+      font-size: 12px; font-weight: 700; cursor: pointer; transition: var(--t);
+    }
+    .btn-copy-did:hover { background: rgba(0,229,255,.15); }
+    .crm-hist-toggle {
+      margin-top: 10px; font-size: 11px; color: var(--text-muted);
+      cursor: pointer; display: flex; align-items: center; gap: 5px;
+      padding: 6px 0; border-top: 1px solid var(--border);
+    }
+    .crm-hist-toggle:hover { color: var(--text); }
+    .crm-hist-body {
+      margin-top: 8px; font-size: 11px; color: var(--text-muted);
+      display: none; border-top: 1px solid var(--border); padding-top: 8px;
+    }
+    .crm-hist-body.open { display: block; }
+    .crm-hist-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 4px 0; border-bottom: 1px solid rgba(0,229,255,.05);
+    }
+    .crm-hist-row:last-child { border-bottom: none; }
+    .crm-export-bar { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+    @media (max-width: 600px) {
+      .crm-grid { grid-template-columns: 1fr; }
+      .crm-meta { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -903,6 +987,9 @@
       </button>
       <button class="tab-btn" onclick="showTab('auditoria',this); renderAuditoria()">
         <i class="fas fa-shield-halved"></i> Auditoría
+      </button>
+      <button class="tab-btn" onclick="showTab('crm',this); renderCRM()">
+        <i class="fas fa-users"></i> CRM
       </button>
     </div>
 
@@ -1160,6 +1247,42 @@
 
     </div><!-- /tab-auditoria -->
 
+    <!-- ==================================================
+         TAB: CRM DE CLIENTES
+    ================================================== -->
+    <div id="tab-crm" class="tab-content">
+
+      <!-- Stats -->
+      <div class="audit-stats" id="crm-stats">
+        <div class="astat"><div class="astat-num" id="crm-stat-total">0</div><div class="astat-lbl">Clientes únicos</div></div>
+        <div class="astat"><div class="astat-num" id="crm-stat-pro">0</div><div class="astat-lbl">PRO Activos</div></div>
+        <div class="astat"><div class="astat-num" id="crm-stat-vigente">0</div><div class="astat-lbl">DEMO Vigentes</div></div>
+        <div class="astat"><div class="astat-num" id="crm-stat-vencido" style="color:var(--red)">0</div><div class="astat-lbl">DEMO Vencidos</div></div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="crm-toolbar">
+        <input class="crm-search" id="crm-buscar" type="text" placeholder="Buscar por negocio, Device ID, tel, email..." oninput="renderCRM()">
+        <div class="crm-chips">
+          <button class="crm-chip active" onclick="setCRMFilter('todos',this)">Todos</button>
+          <button class="crm-chip" onclick="setCRMFilter('pro',this)">PRO</button>
+          <button class="crm-chip" onclick="setCRMFilter('vigente',this)">DEMO Vigente</button>
+          <button class="crm-chip" onclick="setCRMFilter('vencido',this)">DEMO Vencido</button>
+        </div>
+        <button class="btn-save" style="padding:9px 14px;font-size:12px;white-space:nowrap" onclick="exportarCRM()">
+          <i class="fas fa-file-csv"></i> Exportar CSV
+        </button>
+      </div>
+
+      <!-- Grid -->
+      <div class="crm-grid" id="crm-grid"></div>
+      <div id="crm-empty" class="audit-empty" style="display:none">
+        <i class="fas fa-users" style="font-size:28px;margin-bottom:10px;display:block;opacity:0.3"></i>
+        Sin clientes registrados en auditoría.
+      </div>
+
+    </div><!-- /tab-crm -->
+
   </div><!-- /panel-body -->
 </div><!-- /screenPanel -->
 
@@ -1266,6 +1389,7 @@ function showTab(id, el) {
   document.getElementById('tab-' + id).classList.add('active');
   el.classList.add('active');
   if (id === 'historial') { renderHistorialStats(); renderHistorial(); }
+  if (id === 'crm') renderCRM();
 }
 
 // ============================================================
@@ -1627,6 +1751,161 @@ function limpiarAuditoria() {
   if (!confirm('¿Eliminar TODOS los registros de auditoría? Esta acción no se puede deshacer.')) return;
   DB.set(AUDIT_KEY, []);
   renderAuditoria();
+}
+
+// ============================================================
+//  CRM DE CLIENTES
+// ============================================================
+var CRM_FILTER = 'todos';
+
+function setCRMFilter(f, el) {
+  CRM_FILTER = f;
+  document.querySelectorAll('.crm-chip').forEach(function(c) { c.classList.remove('active'); });
+  el.classList.add('active');
+  renderCRM();
+}
+
+function crmClienteStatus(records) {
+  const latest = records.slice().sort(function(a, b) {
+    return new Date(b.fecha) - new Date(a.fecha);
+  })[0];
+  if (!latest) return { key: 'vencido', badge: '<span class="badge-vencido">—</span>', latest };
+  if (latest.tipo === 'PRO') {
+    return { key: 'pro', badge: '<span class="badge-pro-act">PRO Activo</span>', latest };
+  }
+  const dias = (Date.now() - new Date(latest.fecha).getTime()) / 864e5;
+  if (dias < 5) {
+    return { key: 'vigente', badge: '<span class="badge-vigente">DEMO Vigente</span>', latest };
+  }
+  return { key: 'vencido', badge: '<span class="badge-vencido">DEMO Vencido</span>', latest };
+}
+
+function renderCRM() {
+  const all = DB.get(AUDIT_KEY, []);
+  const q   = (document.getElementById('crm-buscar')?.value || '').toLowerCase().trim();
+
+  // Group by deviceId (fallback to negocio)
+  const map = {};
+  all.forEach(function(r) {
+    const key = (r.deviceId || r.negocio || '?').trim();
+    if (!map[key]) map[key] = [];
+    map[key].push(r);
+  });
+
+  let clients = Object.keys(map).map(function(did) {
+    const records  = map[did];
+    const st       = crmClienteStatus(records);
+    const latest   = st.latest;
+    const first    = records.slice().sort(function(a,b){ return new Date(a.fecha)-new Date(b.fecha); })[0];
+    return { did, records, st, latest, first };
+  });
+
+  // Stats
+  document.getElementById('crm-stat-total').textContent   = clients.length;
+  document.getElementById('crm-stat-pro').textContent     = clients.filter(function(c){ return c.st.key==='pro'; }).length;
+  document.getElementById('crm-stat-vigente').textContent = clients.filter(function(c){ return c.st.key==='vigente'; }).length;
+  document.getElementById('crm-stat-vencido').textContent = clients.filter(function(c){ return c.st.key==='vencido'; }).length;
+
+  // Filter by chip
+  if (CRM_FILTER !== 'todos') {
+    clients = clients.filter(function(c){ return c.st.key === CRM_FILTER; });
+  }
+
+  // Filter by search
+  if (q) {
+    clients = clients.filter(function(c) {
+      const hay = (c.did + ' ' + (c.latest?.negocio||'') + ' ' + (c.latest?.tel||'') + ' ' + (c.latest?.email||'')).toLowerCase();
+      return hay.includes(q);
+    });
+  }
+
+  const grid  = document.getElementById('crm-grid');
+  const empty = document.getElementById('crm-empty');
+
+  if (!clients.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  grid.innerHTML = clients.map(function(c, idx) {
+    const r   = c.latest || {};
+    const fd  = new Date(c.first?.fecha || r.fecha).toLocaleDateString('es-VE', { day:'2-digit', month:'short', year:'numeric' });
+    const ld  = new Date(r.fecha).toLocaleDateString('es-VE', { day:'2-digit', month:'short', year:'numeric' });
+    const tel  = r.tel  || '';
+    const email = r.email || '';
+    const total = c.records.length;
+
+    const waBtn  = tel ? `<a class="btn-wa" href="https://wa.me/${tel.replace(/\D/g,'')}" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a>` : '';
+    const copyBtn = `<button class="btn-copy-did" onclick="navigator.clipboard&&navigator.clipboard.writeText('${esc(c.did)}');toast('Device ID copiado')"><i class="fas fa-copy"></i> Device ID</button>`;
+
+    let histHtml = '';
+    if (total > 1) {
+      const rows = c.records.slice().sort(function(a,b){ return new Date(b.fecha)-new Date(a.fecha); }).map(function(x) {
+        const d = new Date(x.fecha).toLocaleDateString('es-VE',{day:'2-digit',month:'short',year:'numeric'});
+        const badge = x.tipo === 'PRO' ? '<span class="badge-pro">PRO</span>' : '<span class="badge-demo">DEMO</span>';
+        return `<div class="crm-hist-row"><span>${badge} ${esc(x.negocio||'—')}</span><span style="color:var(--text-muted)">${d}</span></div>`;
+      }).join('');
+      const hid = 'crm-h-' + idx;
+      histHtml = `<div class="crm-hist-toggle" onclick="var b=document.getElementById('${hid}');b.classList.toggle('open');this.querySelector('i').className=b.classList.contains('open')?'fas fa-chevron-up':'fas fa-chevron-down'">
+        <i class="fas fa-chevron-down"></i> ${total} activaciones registradas
+      </div>
+      <div class="crm-hist-body" id="${hid}">${rows}</div>`;
+    }
+
+    return `<div class="crm-card">
+      <div class="crm-card-head">
+        <div>
+          <div class="crm-negocio">${esc(r.negocio||c.did)}</div>
+          <div class="crm-device">${esc(c.did)}</div>
+        </div>
+        ${c.st.badge}
+      </div>
+      <div class="crm-meta">
+        <div class="crm-meta-row"><b>${esc(tel||'—')}</b>Teléfono</div>
+        <div class="crm-meta-row"><b>${esc(email||'—')}</b>Email</div>
+        <div class="crm-meta-row"><b>${fd}</b>1ª activación</div>
+        <div class="crm-meta-row"><b>${ld}</b>Última</div>
+      </div>
+      <div class="crm-actions">${waBtn}${copyBtn}</div>
+      ${histHtml}
+    </div>`;
+  }).join('');
+}
+
+function exportarCRM() {
+  const all = DB.get(AUDIT_KEY, []);
+  if (!all.length) { toast('No hay datos en auditoría para exportar', 'error'); return; }
+
+  const map = {};
+  all.forEach(function(r) {
+    const key = (r.deviceId || r.negocio || '?').trim();
+    if (!map[key]) map[key] = [];
+    map[key].push(r);
+  });
+
+  const rows = Object.keys(map).map(function(did) {
+    const records = map[did];
+    const st      = crmClienteStatus(records);
+    const r       = st.latest || {};
+    const first   = records.slice().sort(function(a,b){ return new Date(a.fecha)-new Date(b.fecha); })[0];
+    return [
+      r.negocio||'', did, st.key.toUpperCase(),
+      r.tel||'', r.email||'',
+      new Date(first?.fecha||r.fecha).toLocaleDateString('es-VE'),
+      new Date(r.fecha).toLocaleDateString('es-VE'),
+      records.length
+    ].map(function(v){ return '"' + String(v).replace(/"/g,'""') + '"'; }).join(',');
+  });
+
+  const hdr = ['Negocio','Device ID','Estado','Telefono','Email','Primera Activacion','Ultima Activacion','Total Activaciones'];
+  const csv = [hdr.join(',')].concat(rows).join('\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const a    = document.createElement('a');
+  a.href     = URL.createObjectURL(blob);
+  a.download = 'crm_ferreteria_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
 }
 
 function exportarAuditoria() {
