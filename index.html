@@ -1310,6 +1310,28 @@ function ironCheck(body) {
   return (s % 9999).toString().padStart(4, '0');
 }
 
+/* ─────────────────────────────────────────────
+   RESPALDO: MOTOR CENTRAL A2K (Cloudflare Workers)
+   Solo se consulta cuando el candado local (Iron Lock)
+   NO reconoce el código. Nunca reemplaza la lógica local.
+───────────────────────────────────────────── */
+var A2K_ENGINE_URL = 'https://a2k-license-engine.shoppingelectronics3112.workers.dev';
+async function verificarCodigoCentral(code) {
+  try {
+    var r = await fetch(A2K_ENGINE_URL + '/validar?key=' + encodeURIComponent(code) + '&product=ferreteria');
+    var d = await r.json();
+    if (d && d.valid) {
+      var venceEn = null;
+      if (d.type === 'demo' && d.daysLeft != null) {
+        var v = new Date(); v.setDate(v.getDate() + d.daysLeft); v.setHours(23,59,59,999);
+        venceEn = v.toISOString();
+      }
+      return { valid: true, tipo: d.type === 'demo' ? 'DEMO' : 'PRO', venceEn: venceEn };
+    }
+  } catch (e) { /* sin internet u motor no disponible — no bloquea, cae a inválido */ }
+  return { valid: false };
+}
+
 function validarClave(raw) {
   const k = (raw || '').trim().toUpperCase();
   if (!k) return { valida: false, error: 'Ingresa tu clave de licencia.' };
@@ -1337,9 +1359,18 @@ function validarClave(raw) {
   return { valida: true, tipo };
 }
 
-function activarLicencia(raw) {
-  const res = validarClave(raw);
-  if (!res.valida) return res;
+async function activarLicencia(raw) {
+  let res = validarClave(raw);
+  if (!res.valida) {
+    // Respaldo aditivo: el candado local no reconoce el código, se consulta
+    // el motor central antes de rechazarlo definitivamente.
+    const central = await verificarCodigoCentral(raw);
+    if (central.valid) {
+      res = { valida: true, tipo: central.tipo };
+    } else {
+      return res;
+    }
+  }
 
   const deviceId  = getDeviceId();
   const licActual = DB.get('ferr_licencia', null);
@@ -1533,7 +1564,7 @@ function mostrarApp() {
   if (typeof initApp === 'function') initApp();
 }
 
-function intentarActivar() {
+async function intentarActivar() {
   const inp    = document.getElementById('lockInput');
   const errEl  = document.getElementById('lockErr');
   const clave  = inp.value;
@@ -1541,7 +1572,7 @@ function intentarActivar() {
   errEl.style.display = 'none';
   inp.style.borderColor = '';
 
-  const res = activarLicencia(clave);
+  const res = await activarLicencia(clave);
   if (res.valida) {
     inp.style.borderColor = 'var(--neon)';
     inp.style.boxShadow = '0 0 0 3px rgba(0,210,255,0.2)';
