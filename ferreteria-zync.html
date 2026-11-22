@@ -271,7 +271,7 @@ tr:hover td{background:rgba(249,115,22,.04)}
         <input type="text" id="licenseCode" class="form-input" placeholder="FZ-ADMIN-2026 / FZDEMO-XXXX..." style="font-family:var(--mono);text-transform:uppercase;letter-spacing:1px" oninput="this.value=this.value.toUpperCase()">
       </div>
       <button class="btn btn-primary btn-full" onclick="doLogin()" style="height:46px;font-size:15px;font-weight:700;margin-top:4px">🔓 Ingresar</button>
-      <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--text3)">Ferretería Zync v1.0 · Funciona 100% offline · A2K Digital Studio</div>
+      <div style="text-align:center;margin-top:14px;font-size:11px;color:var(--text3)">Ferretería Zync v1.1 · Funciona 100% offline · A2K Digital Studio</div>
     </div>
   </div>
 </div>
@@ -309,6 +309,7 @@ tr:hover td{background:rgba(249,115,22,.04)}
       <div class="nav-item" onclick="showPage('clientes',this)" data-page="clientes"><span class="nav-icon">👥</span><span class="nav-label">Clientes</span></div>
       <div class="nav-item" onclick="showPage('proveedores',this)" data-page="proveedores"><span class="nav-icon">🚛</span><span class="nav-label">Proveedores</span></div>
       <div class="nav-item" onclick="showPage('reportes',this)" data-page="reportes"><span class="nav-icon">📈</span><span class="nav-label">Reportes</span></div>
+      <div class="nav-item" onclick="showPage('fiscal',this)" data-page="fiscal"><span class="nav-icon">📒</span><span class="nav-label">Libro Fiscal SENIAT</span></div>
       <div class="nav-item" onclick="showPage('configuracion',this)" data-page="configuracion"><span class="nav-icon">⚙️</span><span class="nav-label">Configuración</span></div>
     </div>
     <div class="sidebar-footer">
@@ -497,6 +498,165 @@ tr:hover td{background:rgba(249,115,22,.04)}
           <tbody id="cot-tbody"></tbody>
         </table></div>
       </div>
+      <!-- ═══ LIBRO FISCAL SENIAT ═══ -->
+      <div id="page-fiscal" class="page">
+        <style>
+          @media print {
+            aside, .topbar, .no-print, #sidebar { display: none !important; }
+            .main-content { margin-left: 0 !important; padding: 0 !important; }
+            body { background: #fff !important; }
+            .card { break-inside: avoid; box-shadow: none !important; border: 1px solid #ddd !important; }
+            .fiscal-head-print { display: block !important; }
+          }
+          .fiscal-head-print { display: none; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 2px solid #333; }
+          .fiscal-info-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; font-size: 12.5px; line-height: 1.65; color: var(--text2); }
+          .fiscal-info-box strong { color: var(--text); }
+          .fiscal-tabs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px; }
+          .fiscal-tab { padding: 8px 14px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg3); color: var(--text2); font-size: 12.5px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all .15s; }
+          .fiscal-tab:hover { border-color: var(--accent); color: var(--text); }
+          .fiscal-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+          @media print {
+            .fiscal-tab-content { display: none !important; }
+            .fiscal-tab-content.print-active { display: block !important; }
+          }
+          .fiscal-mayor-card { margin-bottom: 16px; }
+          .fiscal-mayor-card .mayor-saldo { font-weight: 800; }
+        </style>
+
+        <div class="flex justify-between items-center mb-4 no-print" style="flex-wrap:wrap;gap:10px">
+          <div>
+            <div class="section-title">📊 Libro Fiscal</div>
+            <div class="section-sub" style="margin-bottom:0">Resumen SENIAT: IVA, IGTF e ISLR — listo para entregar a tu contador</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="fiscalExportarCSV()">⬇ Exportar Excel (CSV)</button>
+            <button class="btn btn-primary" onclick="fiscalImprimir()" style="background:var(--accent)">🖨 Imprimir / PDF</button>
+          </div>
+        </div>
+
+        <div class="card mb-4 no-print">
+          <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+            <input type="month" id="fiscal-periodo" class="form-input" style="max-width:170px" onchange="fiscalManualPeriodo()">
+            <button class="btn" onclick="fiscalSetPeriodo('mes')">Este mes</button>
+            <button class="btn" onclick="fiscalSetPeriodo('pasado')">Mes pasado</button>
+            <button class="btn" onclick="fiscalSetPeriodo('ano')">Este año</button>
+            <button class="btn" onclick="fiscalSetPeriodo('todo')">Todo el historial</button>
+            <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <span style="font-size:12px;color:var(--text2);font-weight:700">Tasas:</span>
+              <label style="font-size:12px;color:var(--text2)">IVA %</label>
+              <input type="number" id="fiscal-iva" class="form-input" style="width:72px" step="0.5" onchange="fiscalGuardarCfg()">
+              <label style="font-size:12px;color:var(--text2)">IGTF %</label>
+              <input type="number" id="fiscal-igtf" class="form-input" style="width:72px" step="0.5" onchange="fiscalGuardarCfg()">
+            </div>
+          </div>
+        </div>
+
+        <div class="fiscal-tabs no-print">
+          <button class="fiscal-tab active" data-tab="resumen" onclick="fiscalCambiarTab('resumen')">📊 Resumen</button>
+          <button class="fiscal-tab" data-tab="ventas" onclick="fiscalCambiarTab('ventas')">🧾 Libro de Ventas</button>
+          <button class="fiscal-tab" data-tab="compras" onclick="fiscalCambiarTab('compras')">📥 Libro de Compras</button>
+          <button class="fiscal-tab" data-tab="diario" onclick="fiscalCambiarTab('diario')">📒 Libro Diario</button>
+          <button class="fiscal-tab" data-tab="mayor" onclick="fiscalCambiarTab('mayor')">📚 Libro Mayor</button>
+          <button class="fiscal-tab" data-tab="balance" onclick="fiscalCambiarTab('balance')">⚖️ Balance</button>
+        </div>
+
+        <div id="fiscalPrintArea">
+          <div class="fiscal-head-print" id="fiscalHeadPrint"></div>
+          <div id="fiscalTab-resumen" class="fiscal-tab-content print-active">
+          <div class="grid-4 mb-4" id="fiscalStats"></div>
+          <div class="grid-2 mb-4">
+            <div class="card">
+              <div class="card-header"><span class="card-title">🗓 Resumen por Mes</span></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Mes</th><th>Ventas</th><th>IVA</th><th>Ventas netas</th><th>Divisas</th><th>IGTF</th><th>Nº</th></tr></thead>
+                  <tbody id="fiscalMeses"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-header"><span class="card-title">💳 Ventas por Método de Pago</span></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Método</th><th>Nº ventas</th><th>Total</th></tr></thead>
+                  <tbody id="fiscalMetodos"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-header"><span class="card-title">🧾 Guía rápida para tu contador</span></div>
+            <div style="padding:6px 2px">
+              <div class="fiscal-info-box" id="fiscalNotaIva"></div>
+              <div class="fiscal-info-box" id="fiscalNotaIgtf"></div>
+              <div class="fiscal-info-box" id="fiscalNotaIslr"></div>
+              <div class="fiscal-info-box" id="fiscalNotaExtra" style="margin-bottom:0"></div>
+            </div>
+          </div>
+          </div>
+
+          <!-- LIBRO DE VENTAS -->
+          <div id="fiscalTab-ventas" class="fiscal-tab-content" style="display:none">
+            <div class="card">
+              <div class="card-header"><span class="card-title">🧾 Libro de Ventas <span style="font-size:11px;color:var(--text3);font-weight:400">— IVA desglosado por factura</span></span></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Fecha</th><th>N° Factura</th><th>Cliente</th><th>RIF/Cédula</th><th>Base imponible</th><th>IVA</th><th>IGTF</th><th>Total</th></tr></thead>
+                  <tbody id="fiscalLibroVentas"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- LIBRO DE COMPRAS -->
+          <div id="fiscalTab-compras" class="fiscal-tab-content" style="display:none">
+            <div class="card">
+              <div class="card-header"><span class="card-title">📥 Libro de Compras <span style="font-size:11px;color:var(--text3);font-weight:400">— mercancía recibida de proveedores</span></span></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Fecha</th><th>N° Factura</th><th>Proveedor</th><th>RIF</th><th>Base imponible</th><th>IVA (crédito)</th><th>Total</th></tr></thead>
+                  <tbody id="fiscalLibroCompras"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- LIBRO DIARIO -->
+          <div id="fiscalTab-diario" class="fiscal-tab-content" style="display:none">
+            <div class="card">
+              <div class="card-header"><span class="card-title">📒 Libro Diario <span style="font-size:11px;color:var(--text3);font-weight:400">— Art. 32 Código de Comercio · asientos Debe/Haber generados automáticamente</span></span></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Asiento</th><th>Fecha</th><th>Concepto</th><th>Cuenta</th><th>Debe</th><th>Haber</th></tr></thead>
+                  <tbody id="fiscalLibroDiario"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- LIBRO MAYOR -->
+          <div id="fiscalTab-mayor" class="fiscal-tab-content" style="display:none">
+            <div id="fiscalLibroMayor"></div>
+          </div>
+
+          <!-- BALANCE DE COMPROBACIÓN -->
+          <div id="fiscalTab-balance" class="fiscal-tab-content" style="display:none">
+            <div class="card">
+              <div class="card-header"><span class="card-title">⚖️ Balance de Comprobación <span style="font-size:11px;color:var(--text3);font-weight:400">— al cierre del período</span></span></div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>Cuenta</th><th>Debe</th><th>Haber</th><th>Saldo deudor</th><th>Saldo acreedor</th></tr></thead>
+                  <tbody id="fiscalBalance"></tbody>
+                </table>
+              </div>
+              <div id="fiscalCuadre" style="padding:12px 16px;font-size:13px;font-weight:700"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
       <!-- ══ CAJA ══ -->
       <div id="page-caja" class="page">
         <div class="section-title">🏧 Caja</div>
@@ -601,6 +761,27 @@ tr:hover td{background:rgba(249,115,22,.04)}
               <div class="form-group"><label class="form-label">Dirección</label><input type="text" id="cfg-dir" class="form-input" placeholder="Calle, Local..."></div>
               <div class="form-group"><label class="form-label">Teléfono</label><input type="text" id="cfg-tel" class="form-input" placeholder="+58 412..."></div>
               <div class="form-group"><label class="form-label">RIF / Cédula</label><input type="text" id="cfg-rif" class="form-input" placeholder="J-XXXXXXXX-X"></div>
+
+              <div class="card mb-4" style="margin-top:16px">
+                <div class="section-title" style="font-size:15px">📄 Factura (formato tipo SENIAT)</div>
+                <div style="font-size:11px;color:var(--text2);margin-bottom:10px">Estos datos salen impresos en la factura que entregas al cliente. Cada negocio llena los suyos.</div>
+                <div class="form-group"><label class="form-label">Razón social / Denominación</label><input type="text" id="fac-razon" class="form-input" placeholder="Ej: Ferretería El Tornillo C.A."></div>
+                <div class="form-group"><label class="form-label">RIF</label><input type="text" id="fac-rif2" class="form-input" placeholder="J-12345678-9"></div>
+                <div class="form-group"><label class="form-label">Dirección fiscal</label><input type="text" id="fac-dir" class="form-input" placeholder="Calle, ciudad, estado"></div>
+                <div class="form-group"><label class="form-label">Teléfono</label><input type="text" id="fac-tel" class="form-input" placeholder="+58 412..."></div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <div class="form-group"><label class="form-label">Serial del sistema</label><input type="text" id="fac-serial" class="form-input" placeholder="Ej: SYS-0001"></div>
+                  <div class="form-group"><label class="form-label">Prefijo control (2 letras)</label><input type="text" id="fac-pref" class="form-input" maxlength="2" placeholder="AA"></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                  <div class="form-group"><label class="form-label">Nro. factura inicial</label><input type="number" id="fac-desde" class="form-input" min="1" placeholder="1"></div>
+                  <div class="form-group"><label class="form-label">Nro. control inicial</label><input type="number" id="fac-ctrl-desde" class="form-input" min="1" placeholder="1"></div>
+                </div>
+                <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:8px;padding:10px;font-size:11px;color:var(--text2);margin-bottom:12px">
+                  ⚖️ <strong>Aviso legal:</strong> el documento es <strong>no fiscal</strong> — usa el <em>formato</em> del modelo SENIAT pero no sustituye la designación oficial. La leyenda legal sale automática en el pie de cada factura.
+                </div>
+                <button class="btn btn-primary" onclick="saveFacturaSENIAT()">💾 Guardar datos de factura</button>
+              </div>
               <button class="btn btn-primary" onclick="saveConfig()">💾 Guardar</button>
             </div>
             <div class="card mb-4">
@@ -888,7 +1069,7 @@ tr:hover td{background:rgba(249,115,22,.04)}
 
 <script>
 // ═══════════════════════════════════════════════
-// FERRETERÍA ZYNC v1.0 — A2K Digital Studio
+// FERRETERÍA ZYNC v1.1 — A2K Digital Studio
 // localStorage prefix: fz_
 // ═══════════════════════════════════════════════
 
@@ -1139,11 +1320,11 @@ function showPage(page,el){
   if(el)el.classList.add('active');
   var titles={dashboard:'📊 Dashboard',pos:'🛒 Punto de Venta',inventario:'📦 Inventario',
     historial:'📋 Historial',devoluciones:'↩️ Devoluciones',cotizaciones:'📝 Cotizaciones',caja:'🏧 Caja',
-    clientes:'👥 Clientes',proveedores:'🚛 Proveedores',reportes:'📈 Reportes',configuracion:'⚙️ Configuración'};
+    clientes:'👥 Clientes',proveedores:'🚛 Proveedores',reportes:'📈 Reportes',fiscal:'📒 Libro Fiscal SENIAT',configuracion:'⚙️ Configuración'};
   var tb=document.getElementById('topbarTitle');if(tb)tb.textContent=titles[page]||page;
   var renders={dashboard:renderDashboard,pos:renderPos,inventario:renderInventario,
     historial:renderHistorial,devoluciones:renderDevoluciones,cotizaciones:renderCotizaciones,caja:renderCaja,
-    clientes:renderClientes,proveedores:renderProveedores,reportes:renderReportes,configuracion:renderConfig};
+    clientes:renderClientes,proveedores:renderProveedores,reportes:renderReportes,fiscal:renderFiscalPage,configuracion:renderConfig};
   if(renders[page])renders[page]();
   var sb=document.getElementById('sidebar');if(sb)sb.classList.remove('mobile-open');
 }
@@ -1256,7 +1437,7 @@ function renderDashboard(){
   if(ch)ch.innerHTML=days.map(function(d){var h=Math.max(6,Math.round(d.val/mx*90));return'<div class="bar-col"><div class="bar-val" style="font-size:9px">'+(d.val>0?'$'+d.val.toFixed(0):'')+'</div><div class="bar" style="height:'+h+'px"></div></div>';}).join('');
   if(cl)cl.innerHTML=days.map(function(d){return'<span style="font-size:10px;color:var(--text3);flex:1;text-align:center">'+d.lbl+'</span>';}).join('');
   // Top 5
-  var cnt={};vh.forEach(function(x){(x.items||[]).forEach(function(it){cnt[it.nombre]=(cnt[it.nombre]||0)+it.qty;});});
+  var cnt={};vh.forEach(function(x){var _dq={};(x.itemsDevueltos||[]).forEach(function(d){_dq[d.id]=(_dq[d.id]||0)+d.qty;});(x.items||[]).forEach(function(it){var q=it.qty-(_dq[it.id]||0);if(q>0)cnt[it.nombre]=(cnt[it.nombre]||0)+q;});});
   var top5=Object.entries(cnt).sort(function(a,b){return b[1]-a[1];}).slice(0,5);
   var t5=document.getElementById('top5-hoy');
   if(t5)t5.innerHTML=top5.length?top5.map(function(e,i){return'<div class="flex items-center justify-between mb-2"><span style="font-size:13px"><strong style="color:var(--accent)">#'+(i+1)+'</strong> '+e[0]+'</span><span style="font-family:var(--mono);font-size:12px;color:var(--text2)">'+e[1]+' uds</span></div>';}).join(''):'<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Sin ventas hoy</div>';
@@ -1427,8 +1608,12 @@ function imprimirRecibo(venta){
   var cfg=getCfg();
   var html='<div style="text-align:center;margin-bottom:12px"><strong style="font-size:14px">'+cfg.nombre+'</strong><br>'+(cfg.tel?cfg.tel+'<br>':'')+(cfg.dir?cfg.dir+'<br>':'')+(cfg.rif?'RIF: '+cfg.rif+'<br>':'')+'</div>'+
     '<hr><div style="text-align:center;margin:8px 0">COMPROBANTE DE VENTA</div>'+
-    '<div>Fecha: '+fmtDateTime(venta.ts)+'</div><div>Método: '+(venta.metodoLabel||venta.metodo)+'</div>'+(venta.mixto?(function(m){var pm1=PAY_METHODS.find(function(p){return p.id===m.m1;})||{label:m.m1};var pm2=PAY_METHODS.find(function(p){return p.id===m.m2;})||{label:m.m2};return(m.a1>0?'<div style="font-size:11px;color:#555">  ↳ '+pm1.label+': '+fmt$(m.a1)+'</div>':'')+(m.a2>0?'<div style="font-size:11px;color:#555">  ↳ '+pm2.label+': '+fmt$(m.a2)+'</div>':'');})(venta.mixto):'')+'<hr>'+
-    venta.items.map(function(i){return'<div>'+i.nombre+'<span style="float:right">'+fmt$(i.precio*i.qty)+'</span><br><small>'+i.qty+' × '+fmt$(i.precio)+'</small></div>';}).join('')+
+    '<div>Fecha: '+fmtDateTime(venta.ts)+'</div><div>Método: '+(venta.metodoLabel||venta.metodo)+'</div>'+
+    (venta.devuelta?'<div style="text-align:center;font-size:11px;font-weight:900;border:1px solid #000;margin:4px 0;padding:2px">★ VENTA DEVUELTA — VER NOTA DE CREDITO ★</div>':'')+
+    (venta.devueltaParcial?'<div style="font-size:11px;border:1px dashed #000;margin:4px 0;padding:2px">Devolución parcial aplicada: -'+fmt$(venta.montoDevuelto||0)+'</div>':'')+
+    (venta.mixto?(function(m){var pm1=PAY_METHODS.find(function(p){return p.id===m.m1;})||{label:m.m1};var pm2=PAY_METHODS.find(function(p){return p.id===m.m2;})||{label:m.m2};return(m.a1>0?'<div style="font-size:11px;color:#555">  ↳ '+pm1.label+': '+fmt$(m.a1)+'</div>':'')+(m.a2>0?'<div style="font-size:11px;color:#555">  ↳ '+pm2.label+': '+fmt$(m.a2)+'</div>':'');})(venta.mixto):'')+'<hr>'+
+    (function(){var _dq={};(venta.itemsDevueltos||[]).forEach(function(d){_dq[d.id]=(_dq[d.id]||0)+d.qty;});
+      return venta.items.map(function(i){var qd=_dq[i.id]||0;return'<div>'+i.nombre+(qd>0?' <small>[DEV x'+qd+']</small>':'')+'<span style="float:right">'+fmt$(i.precio*i.qty)+'</span><br><small>'+i.qty+' × '+fmt$(i.precio)+'</small></div>';}).join('');})()+
     '<hr><div><strong>TOTAL: '+fmt$(venta.total)+'</strong></div>'+
     '<div style="color:#666">'+fmtBs(venta.total)+' (Tasa: '+cfg.tasa+')</div>'+
     (venta.notas?'<div style="margin-top:8px;color:#666">Nota: '+venta.notas+'</div>':'')+
@@ -1579,15 +1764,17 @@ function renderHistorial(){
   if(ms&&ms.options.length<=1)ms.innerHTML='<option value="">Todos los métodos</option>'+PAY_METHODS.map(function(pm){return'<option value="'+pm.id+'">'+pm.label+'</option>';}).join('');
   var el=document.getElementById('hist-tbody');if(!el)return;
   el.innerHTML=f.length?f.map(function(v,i){
-    return'<tr>'+
+    var _dq={};(v.itemsDevueltos||[]).forEach(function(d){_dq[d.id]=(_dq[d.id]||0)+d.qty;});
+    return'<tr'+(v.devuelta?' style="opacity:.55"':'')+'>'+
       '<td>'+fmtDateTime(v.ts)+'</td>'+
       '<td style="font-family:var(--mono);color:var(--text2);font-size:11px">...'+v.id.slice(-4)+'</td>'+
-      '<td style="font-size:12px">'+v.items.map(function(i){return(i.emoji||'')+i.nombre+' ×'+i.qty;}).join(', ')+'</td>'+
+      '<td style="font-size:12px">'+v.items.map(function(i){var qd=_dq[i.id]||0;var qm=i.qty-qd;return qm>0?(i.emoji||'')+i.nombre+' ×'+qm:(qd>0?'<span style="opacity:.5;text-decoration:line-through">'+(i.emoji||'')+i.nombre+' ×'+i.qty+'</span>':(i.emoji||'')+i.nombre+' ×'+i.qty);}).join(', ')+'</td>'+
       '<td style="font-family:var(--mono);font-weight:700;color:var(--accent)">'+fmt$(v.total)+'</td>'+
       '<td style="font-family:var(--mono);color:var(--warn);font-size:12px">'+fmtBs(v.total)+'</td>'+
-      '<td>'+( v.metodoLabel||v.metodo)+'</td>'+
+      '<td>'+( v.metodoLabel||v.metodo)+(v.devueltaParcial?' <span style="font-size:9px;padding:1px 5px;background:rgba(245,158,11,.15);color:var(--warn);border-radius:6px;font-weight:700">DEV '+fmt$(v.montoDevuelto||0)+'</span>':'')+'</td>'+
       '<td style="white-space:nowrap">'+
         '<button class="btn btn-ghost btn-sm" onclick="verVenta(\''+v.id+'\')" title="Ver recibo">🧾</button> '+
+        '<button class="btn btn-ghost btn-sm" onclick="facturaAbrir(\''+v.id+'\')" title="Factura formato SENIAT">📄</button> '+
         (v.devuelta?'<span style="font-size:10px;padding:2px 6px;background:rgba(239,68,68,.15);color:var(--danger);border-radius:8px;font-weight:700">DEV</span>':
         '<button class="btn btn-sm" onclick="abrirDevolucion(\''+v.id+'\')" title="Procesar devolución" style="background:rgba(239,68,68,.1);color:var(--danger);border:1px solid rgba(239,68,68,.3);border-radius:6px;padding:3px 8px;font-size:11px;cursor:pointer">↩️</button>')+
       '</td>'+
@@ -1962,7 +2149,7 @@ function renderReportes(){
       '<div style="background:var(--bg3);border-radius:4px;height:8px"><div style="background:var(--accent);height:8px;border-radius:4px;width:'+pct+'%"></div></div></div>';
   }).join('')||'<div style="color:var(--text3)">Sin datos</div>';
   // Top productos
-  var cnt={};f.forEach(function(v){(v.items||[]).forEach(function(it){cnt[it.nombre]=(cnt[it.nombre]||0)+it.qty;});});
+  var cnt={};f.forEach(function(v){var _dq={};(v.itemsDevueltos||[]).forEach(function(d){_dq[d.id]=(_dq[d.id]||0)+d.qty;});(v.items||[]).forEach(function(it){var q=it.qty-(_dq[it.id]||0);if(q>0)cnt[it.nombre]=(cnt[it.nombre]||0)+q;});});
   var tp=document.getElementById('rep-top-prod');
   if(tp)tp.innerHTML=Object.entries(cnt).sort(function(a,b){return b[1]-a[1];}).slice(0,10).map(function(e,i){
     return'<div class="flex items-center justify-between mb-2"><span style="font-size:13px"><strong style="color:var(--accent)">#'+(i+1)+'</strong> '+e[0]+'</span><span class="badge badge-info" style="font-family:var(--mono)">'+e[1]+' uds</span></div>';
@@ -1986,6 +2173,7 @@ function renderConfig(){
   var cfg=getCfg();
   var set=function(id,v){var el=document.getElementById(id);if(el)el.value=v||'';};
   set('cfg-nombre',cfg.nombre);set('cfg-dir',cfg.dir);set('cfg-tel',cfg.tel);set('cfg-rif',cfg.rif);set('cfg-tasa',cfg.tasa||40);
+  try{facCargarConfig();}catch(e){}
   var session=DB.get('session');
   var licEl=document.getElementById('cfg-lic-tipo');
   if(licEl&&session){var tipoCls={ADMIN:'color:var(--info)',PRO:'color:var(--success)',DEMO:'color:var(--warn)'}[session.tipo]||'';licEl.innerHTML='<span style="'+tipoCls+'">'+session.tipo+'</span> · <span style="font-family:var(--mono);font-size:12px">'+session.code+'</span> · Vence: '+(session.vence||'N/A');}
@@ -1995,11 +2183,13 @@ function renderConfig(){
   renderPayMethodsCfg();calcVencePRO();renderLicTable();
 }
 function saveConfig(){
+  var prev=getCfg();
   var cfg={nombre:(document.getElementById('cfg-nombre')||{}).value.trim()||'Ferretería Zync',
     dir:(document.getElementById('cfg-dir')||{}).value.trim(),
     tel:(document.getElementById('cfg-tel')||{}).value.trim(),
     rif:(document.getElementById('cfg-rif')||{}).value.trim(),
-    tasa:parseFloat((document.getElementById('cfg-tasa')||{}).value)||40};
+    tasa:parseFloat((document.getElementById('cfg-tasa')||{}).value)||40,
+    factura:prev.factura||{}};
   DB.set('config',cfg);
   var sb=document.getElementById('shopBadge');if(sb)sb.textContent=cfg.nombre;
   var session=DB.get('session');if(session){session.shop=cfg.nombre;DB.set('session',session);}
@@ -2219,28 +2409,57 @@ function confirmarDevolucionFZ(ventaId){
   var idx=ventas.findIndex(function(x){return x.id===ventaId;});
   if(idx===-1){showToast('Venta no encontrada','error');return;}
   var v=ventas[idx];
-  var checks=document.querySelectorAll('#fz-dev-items input[type=checkbox]:checked');
-  var indices=Array.from(checks).map(function(c){return parseInt(c.value);});
+  var checks=[];
+  document.querySelectorAll('#fz-dev-items input[type=checkbox]').forEach(function(cb){if(cb.checked)checks.push(cb);});
+  var indices=checks.map(function(c){return parseInt(c.value);});
   if(!indices.length){showToast('Selecciona al menos un ítem','warn');return;}
   var motivo=(document.getElementById('fz-dev-motivo')||{}).value||'otro';
   var items=indices.map(function(i){return(v.items||[])[i];}).filter(Boolean);
-  var monto=items.reduce(function(s,it){return s+(it.subtotal||0);},0);
-  var esTotal=indices.length===(v.items||[]).length;
+  var monto=items.reduce(function(s,it){return s+(it.subtotal||it.precio*it.qty||0);},0);
+  monto=parseFloat(monto.toFixed(2));
+  var esTotal=monto>=(v.total||0)-0.001;
   var prods=DB.get('productos')||[];
   items.forEach(function(it){
     var p=prods.find(function(x){return x.id===it.id;});
     if(p)p.stock=(p.stock||0)+it.qty;
   });
   DB.set('productos',prods);
+  // Reducción atómica de la venta
+  v.montoDevuelto=parseFloat(((v.montoDevuelto||0)+monto).toFixed(2));
+  v.total=parseFloat(Math.max(0,(v.total||0)-monto).toFixed(2));
+  v.devuelta=esTotal;
+  v.devueltaParcial=!esTotal&&v.montoDevuelto>0;
+  v.motivoDev=motivo;
+  v.itemsDevueltos=(v.itemsDevueltos||[]).concat(items.map(function(it){return{id:it.id,nombre:it.nombre,qty:it.qty};}));
+  DB.set('ventas',ventas);
+  // Registro en módulo devoluciones
   var devs=DB.get('devoluciones')||[];
   devs.push({id:uid(),ts:Date.now(),ventaId:ventaId,fecha:new Date().toISOString().slice(0,10),items:items,motivo:motivo,monto:monto,tipo:esTotal?'total':'parcial'});
   DB.set('devoluciones',devs);
-  if(esTotal)ventas[idx].devuelta=true;else ventas[idx].devueltaParcial=true;
-  ventas[idx].montoDevuelto=(ventas[idx].montoDevuelto||0)+monto;
-  DB.set('ventas',ventas);
+  // Nota de crédito para el Libro Fiscal
+  var cfg0=getCfg();
+  var ncs=DB.get('notasCredito')||[];
+  ncs.push({id:uid(),ventaId:ventaId,fecha:new Date().toISOString(),totalUSD:monto,totalBs:parseFloat((monto*(cfg0.tasa||40)).toFixed(2)),motivo:motivo,esTotal:esTotal,items:items.map(function(it){return{id:it.id,nombre:it.nombre,qty:it.qty};})});
+  DB.set('notasCredito',ncs);
+  // Egreso en caja si está abierta
+  if(DB.get('caja_apertura')){
+    var movs=DB.get('caja_movimientos')||[];
+    movs.push({id:uid(),ts:Date.now(),tipo:'egreso',desc:'Devolución Venta #'+String(ventaId).slice(-5)+' — '+motivo,monto:monto,moneda:'USD',esDevolucion:true});
+    DB.set('caja_movimientos',movs);
+  }
+  // Si era fiado, reducir la deuda del cliente
+  if(v.fiadoClienteId){
+    var clis=DB.get('clientes')||[];
+    var cli=clis.find(function(c){return c.id===v.fiadoClienteId;});
+    if(cli){cli.fiado=parseFloat(Math.max(0,(cli.fiado||0)-monto).toFixed(2));cli.movsFiado=cli.movsFiado||[];cli.movsFiado.push({ts:Date.now(),concepto:'Devolución Venta #'+String(ventaId).slice(-4),monto:-monto,saldo:cli.fiado});DB.set('clientes',clis);}
+  }
   var m=document.getElementById('modalDevolucionFZ');if(m)m.remove();
-  showToast('↩️ Devolución registrada: '+fmt$(monto)+' — Stock restaurado','success');
+  showToast('↩️ Devolución '+(esTotal?'total':'parcial '+fmt$(monto))+' — Stock restaurado','success');
   renderDevoluciones();
+  try{renderHistorial();}catch(e){}
+  try{renderDashboard();}catch(e){}
+  try{renderReportes();}catch(e){}
+  try{renderCaja();}catch(e){}
 }
 </script>
 
@@ -2471,6 +2690,651 @@ function autoEmojiCatFZ(sel){
   var el=document.getElementById('mprod-emoji');
   if(el&&!el.value&&MAP[cat])el.value=MAP[cat];
 }
+</script>
+
+<script>
+// ══ HELPERS FISCALES (shims) ══
+var STATE = {user:null};
+function gel(id){return document.getElementById(id);}
+function gval(id){var e=document.getElementById(id);return e?e.value:'';}
+
+// ══ LIBRO FISCAL SENIAT + FACTURA (v1.1) ══
+var FISCAL_METODOS_DIVISAS = ['efectivo_usd','zelle','binance','divisas','Efectivo $','Zelle','Binance','Binance Pay','Zinli','💵 Efectivo USD','💙 Zelle','🟡 Binance Pay','💶 Otras Divisas'];
+var FISCAL_MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+var FISCAL_TODO = false; // true cuando el usuario eligio "Todo el historial"
+
+function fMoney(n) { return '$' + (n || 0).toFixed(2); }
+function fEscapeCSV(s) {
+  s = String(s == null ? '' : s);
+  return '"' + s.replace(/"/g, '""') + '"';
+}
+function fEscHTML(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function fiscalCfg() {
+  var c = DB.get('fiscal_config') || {};
+  return {
+    iva:  (typeof c.iva  === 'number' && !isNaN(c.iva))  ? c.iva  : 16,
+    igtf: (typeof c.igtf === 'number' && !isNaN(c.igtf)) ? c.igtf : 3
+  };
+}
+
+function fiscalGuardarCfg() {
+  var c = fiscalCfg();
+  var iva  = parseFloat(document.getElementById('fiscal-iva').value);
+  var igtf = parseFloat(document.getElementById('fiscal-igtf').value);
+  if (!isNaN(iva))  c.iva  = iva;
+  if (!isNaN(igtf)) c.igtf = igtf;
+  DB.set('fiscal_config', c);
+  renderFiscalPage();
+  showToast('✅ Tasas fiscales guardadas (IVA ' + c.iva + '% · IGTF ' + c.igtf + '%)', 'success');
+}
+
+function fiscalSetPeriodo(tipo) {
+  var now = new Date();
+  var input = document.getElementById('fiscal-periodo');
+  if (tipo === 'mes') {
+    input.value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+    FISCAL_TODO = false;
+  } else if (tipo === 'pasado') {
+    var d = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    input.value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    FISCAL_TODO = false;
+  } else if (tipo === 'ano') {
+    input.value = String(now.getFullYear());
+    FISCAL_TODO = false;
+  } else if (tipo === 'todo') {
+    input.value = '';
+    FISCAL_TODO = true;
+  }
+  renderFiscalPage();
+}
+
+function fiscalManualPeriodo() {
+  FISCAL_TODO = false;
+  renderFiscalPage();
+}
+
+function fiscalPeriodoActual() {
+  var el = document.getElementById('fiscal-periodo');
+  return el ? (el.value || '') : '';
+}
+
+function fiscalPeriodoLabel() {
+  var per = fiscalPeriodoActual();
+  if (!per) return 'Todo el historial';
+  if (per.length === 4) return 'Año ' + per;
+  var y = per.substring(0, 4), m = parseInt(per.substring(5, 7), 10);
+  return FISCAL_MESES[m - 1] + ' ' + y;
+}
+
+function fiscalFiltrarPorPeriodo(arr) {
+  var per = fiscalPeriodoActual();
+  if (!per) return arr || [];
+  return (arr || []).filter(function (x) { return (x.fecha || '').substring(0, per.length) === per; });
+}
+
+function fiscalCalc() {
+  var cfg = fiscalCfg();
+  var factor = 1 + cfg.iva / 100;
+  var ventas = fiscalFiltrarPorPeriodo(DB.get('ventas') || []);
+
+  var t = { n: 0, bruto: 0, iva: 0, neto: 0, divisas: 0, igtf: 0, devoluciones: 0, compras: 0, pagosProv: 0, egresos: 0, cxc: 0, cxp: 0 };
+  var porMes = {}, porMetodo = {};
+
+  ventas.forEach(function (v) {
+    var total = v.totalUSD || v.total || 0;
+    var iva = total - total / factor;
+    var esDiv = FISCAL_METODOS_DIVISAS.indexOf(v.metodo) >= 0;
+    t.n++; t.bruto += total; t.iva += iva; t.neto += total / factor;
+    if (esDiv) { t.divisas += total; t.igtf += total * cfg.igtf / 100; }
+    var mes = (v.fecha || '').substring(0, 7) || '—';
+    if (!porMes[mes]) porMes[mes] = { bruto: 0, iva: 0, neto: 0, divisas: 0, igtf: 0, n: 0 };
+    porMes[mes].bruto += total; porMes[mes].iva += iva; porMes[mes].neto += total / factor; porMes[mes].n++;
+    if (esDiv) { porMes[mes].divisas += total; porMes[mes].igtf += total * cfg.igtf / 100; }
+    var met = v.metodo || '—';
+    if (!porMetodo[met]) porMetodo[met] = { n: 0, total: 0, div: 0 };
+    porMetodo[met].n++; porMetodo[met].total += total; if (esDiv) porMetodo[met].div += total;
+  });
+
+  // Devoluciones (notas de crédito) del período
+  var ncs = fiscalFiltrarPorPeriodo(DB.get('notasCredito') || []);
+  t.devoluciones = ncs.reduce(function (s, x) { return s + (x.totalUSD || 0); }, 0);
+
+  // Compras = mercancía recibida (deuda registrada); pagos = dinero salido a proveedores
+  var pagosProv = fiscalFiltrarPorPeriodo(DB.get('pagos_proveedores') || []);
+  t.compras    = pagosProv.filter(function (x) { return x.tipo === 'deuda'; }).reduce(function (s, x) { return s + (x.monto || 0); }, 0);
+  t.pagosProv  = pagosProv.filter(function (x) { return x.tipo === 'pago';  }).reduce(function (s, x) { return s + (x.monto || 0); }, 0);
+
+  // Egresos de caja del período (pagos a proveedores, devoluciones y gastos manuales)
+  var movs = fiscalFiltrarPorPeriodo(DB.get('caja_movimientos') || []);
+  t.egresos = movs.filter(function (x) { return x.tipo === 'salida' || x.tipo === 'egreso'; })
+                  .reduce(function (s, x) { return s + Math.abs(x.monto || 0); }, 0);
+
+  // Cuentas por cobrar / por pagar (saldo vivo, sin filtro de fecha)
+  t.cxc = (DB.get('clientes') || []).reduce(function (s, c) { return s + (c.deuda || c.fiado || 0); }, 0);
+  t.cxp = (DB.get('proveedores') || []).reduce(function (s, p) { return s + (p.deudaPendiente || p.deuda || 0); }, 0);
+
+  return { cfg: cfg, t: t, porMes: porMes, porMetodo: porMetodo, ventas: ventas };
+}
+
+// ── Motor contable: asientos Debe/Haber derivados de los datos existentes ──
+var FISCAL_PLAN_ORDEN = ['CAJA', 'BANCOS Y DIVISAS', 'CUENTAS POR COBRAR', 'INVENTARIO (COMPRAS)',
+  'IVA CRÉDITO FISCAL', 'CUENTAS POR PAGAR', 'IVA DÉBITO FISCAL', 'VENTAS',
+  'DEVOLUCIONES S/V', 'GASTOS OPERATIVOS', 'OTROS INGRESOS'];
+var FISCAL_TAB_ACTIVA = 'resumen';
+
+function fiscalCambiarTab(tab) {
+  FISCAL_TAB_ACTIVA = tab;
+  document.querySelectorAll('#page-fiscal .fiscal-tab-content').forEach(function (d) {
+    var esActiva = d.id === 'fiscalTab-' + tab;
+    d.style.display = esActiva ? 'block' : 'none';
+    d.classList.toggle('print-active', esActiva);
+  });
+  document.querySelectorAll('#page-fiscal .fiscal-tab').forEach(function (b) {
+    b.classList.toggle('active', b.getAttribute('data-tab') === tab);
+  });
+}
+
+function fiscalCuentaCobro(metodo) {
+  if (metodo === 'Fiado') return 'CUENTAS POR COBRAR';
+  if (metodo === 'Efectivo $' || metodo === 'Efectivo Bs') return 'CAJA';
+  return 'BANCOS Y DIVISAS';
+}
+
+function fiscalMovimientos() {
+  var cfg = fiscalCfg();
+  var factor = 1 + cfg.iva / 100;
+  // numeración determinista de facturas (todas las ventas, orden cronológico)
+  var todas = (DB.get('ventas') || []).slice().sort(function (a, b) {
+    if ((a.fecha || '') !== (b.fecha || '')) return (a.fecha || '') < (b.fecha || '') ? -1 : 1;
+    return a.id - b.id;
+  });
+  var numFac = {};
+  todas.forEach(function (v, i) { numFac[v.id] = 'A2K-' + String(i + 1).padStart(6, '0'); });
+  var nomCli = {}, rifCli = {};
+  (DB.get('clientes') || []).forEach(function (c) { nomCli[c.id] = c.nombre || ''; rifCli[c.id] = c.rif || c.cedula || ''; });
+  var rifProvPorNombre = {};
+  (DB.get('proveedores') || []).forEach(function (p) { rifProvPorNombre[p.nombre] = p.rif || p.cedula || ''; });
+  var ventasAll = DB.get('ventas') || [];
+  var grupos = [];
+
+  // 1) Ventas
+  fiscalFiltrarPorPeriodo(ventasAll).forEach(function (v) {
+    var total = v.totalUSD || v.total || 0; if (!total) return;
+    var neto = total / factor, iva = total - neto;
+    var fac = numFac[v.id] || ('A2K-' + String(v.id).slice(-6));
+    var cli = v.cliente ? (nomCli[v.cliente] || '') : '';
+    grupos.push({ fecha: v.fecha, concepto: 'Venta ' + fac + (cli ? ' — ' + cli : '') + (v.metodo === 'Fiado' ? ' (fiado)' : ''), filas: [
+      [fiscalCuentaCobro(v.metodo), total, 0],
+      ['VENTAS', 0, neto],
+      ['IVA DÉBITO FISCAL', 0, iva]
+    ]});
+  });
+  // 2) Devoluciones
+  fiscalFiltrarPorPeriodo(DB.get('notasCredito') || []).forEach(function (nc) {
+    var total = nc.totalUSD || 0; if (!total) return;
+    var neto = total / factor, iva = total - neto;
+    var vo = ventasAll.find(function (x) { return x.id === nc.ventaId; });
+    grupos.push({ fecha: nc.fecha, concepto: 'Devolución NC-' + String(nc.ventaId || nc.id).slice(-6) + (nc.motivo ? ' — ' + nc.motivo : ''), filas: [
+      ['DEVOLUCIONES S/V', neto, 0],
+      ['IVA DÉBITO FISCAL', iva, 0],
+      [vo ? fiscalCuentaCobro(vo.metodo) : 'CAJA', 0, total]
+    ]});
+  });
+  // 3) Compras (mercancía recibida)
+  fiscalFiltrarPorPeriodo(DB.get('pagos_proveedores') || []).forEach(function (pg) {
+    if (pg.tipo !== 'deuda') return;
+    var total = pg.monto || 0; if (!total) return;
+    var neto = total / factor, iva = total - neto;
+    grupos.push({ fecha: pg.fecha, concepto: 'Compra ' + (pg.factura ? 'FAC:' + pg.factura + ' ' : '') + '— ' + (pg.proveedor || ''), filas: [
+      ['INVENTARIO (COMPRAS)', neto, 0],
+      ['IVA CRÉDITO FISCAL', iva, 0],
+      ['CUENTAS POR PAGAR', 0, total]
+    ]});
+  });
+  // 4) Pagos a proveedores
+  fiscalFiltrarPorPeriodo(DB.get('pagos_proveedores') || []).forEach(function (pg) {
+    if (pg.tipo !== 'pago') return;
+    var total = pg.monto || 0; if (!total) return;
+    var met = pg.metodo || '';
+    grupos.push({ fecha: pg.fecha, concepto: 'Pago a proveedor — ' + (pg.proveedor || ''), filas: [
+      ['CUENTAS POR PAGAR', total, 0],
+      [(met === 'Efectivo $' || met === 'Efectivo Bs') ? 'CAJA' : 'BANCOS Y DIVISAS', 0, total]
+    ]});
+  });
+  // 5) Cobros de fiados (registrados desde la actualización del Libro Fiscal)
+  fiscalFiltrarPorPeriodo(DB.get('cobros_fiados') || []).forEach(function (cb) {
+    var total = cb.monto || 0; if (!total) return;
+    grupos.push({ fecha: cb.fecha, concepto: 'Cobro fiado — ' + (cb.cliente || ''), filas: [
+      ['CAJA', total, 0],
+      ['CUENTAS POR COBRAR', 0, total]
+    ]});
+  });
+  // 6) Movimientos manuales de caja (se excluyen ventas, pagos a proveedores y devoluciones ya asentados)
+  fiscalFiltrarPorPeriodo(DB.get('caja_movimientos') || []).forEach(function (mv) {
+    var desc = mv.descripcion || '';
+    if (desc.indexOf('Venta #') === 0 || desc.indexOf('Pago a proveedor:') === 0 || desc.indexOf('Devolucion') === 0 || desc.indexOf('Devolución') === 0) return;
+    var monto = Math.abs(mv.monto || 0); if (!monto) return;
+    if (mv.tipo === 'salida' || mv.tipo === 'egreso') {
+      grupos.push({ fecha: mv.fecha, concepto: 'Gasto — ' + desc, filas: [
+        ['GASTOS OPERATIVOS', monto, 0],
+        ['CAJA', 0, monto]
+      ]});
+    } else if (mv.tipo === 'entrada') {
+      grupos.push({ fecha: mv.fecha, concepto: 'Ingreso — ' + desc, filas: [
+        ['CAJA', monto, 0],
+        ['OTROS INGRESOS', 0, monto]
+      ]});
+    }
+  });
+
+  // orden cronológico y numeración de asientos
+  grupos.sort(function (a, b) { return (a.fecha || '') < (b.fecha || '') ? -1 : 1; });
+  var movs = [];
+  grupos.forEach(function (g, i) {
+    g.filas.forEach(function (f) {
+      movs.push({ fecha: g.fecha, concepto: g.concepto, asiento: i + 1, cuenta: f[0], debe: f[1], haber: f[2] });
+    });
+  });
+  return { movs: movs, numFac: numFac, nomCli: nomCli, rifCli: rifCli, rifProvPorNombre: rifProvPorNombre, factor: factor, cfg: cfg };
+}
+
+function fiscalRenderLibroVentas(d) {
+  var cfg = d.cfg, factor = d.factor;
+  var ventas = fiscalFiltrarPorPeriodo(DB.get('ventas') || []).slice().sort(function (a, b) { return (a.fecha || '') < (b.fecha || '') ? -1 : 1; });
+  var bruto = 0, ivaT = 0, igtfT = 0, baseT = 0;
+  var rows = ventas.map(function (v) {
+    var total = v.totalUSD || v.total || 0;
+    var base = total / factor, iva = total - base;
+    var esDiv = FISCAL_METODOS_DIVISAS.indexOf(v.metodo) >= 0;
+    var igtf = esDiv ? total * cfg.igtf / 100 : 0;
+    bruto += total; ivaT += iva; igtfT += igtf; baseT += base;
+    return '<tr><td>' + (v.fecha || '').substring(0, 10) + '</td><td>' + (d.numFac[v.id] || '') + '</td><td>' +
+      (v.cliente ? fEscHTML(d.nomCli[v.cliente] || '—') : 'Consumidor final') + '</td><td>' +
+      (v.cliente ? fEscHTML(d.rifCli[v.cliente] || '—') : '—') + '</td><td>' + base.toFixed(2) + '</td><td>' +
+      iva.toFixed(2) + '</td><td>' + (igtf ? igtf.toFixed(2) : '—') + '</td><td>' + total.toFixed(2) + '</td></tr>';
+  }).join('');
+  document.getElementById('fiscalLibroVentas').innerHTML = rows
+    ? rows + '<tr style="font-weight:800;border-top:2px solid var(--border)"><td colspan="4">TOTALES DEL PERÍODO</td><td>' + baseT.toFixed(2) + '</td><td>' + ivaT.toFixed(2) + '</td><td>' + igtfT.toFixed(2) + '</td><td>' + bruto.toFixed(2) + '</td></tr>'
+    : '<tr><td colspan="8" style="text-align:center;color:var(--text3);padding:20px">Sin ventas en este período</td></tr>';
+}
+
+function fiscalRenderLibroCompras(d) {
+  var factor = d.factor;
+  var compras = fiscalFiltrarPorPeriodo(DB.get('pagos_proveedores') || []).filter(function (x) { return x.tipo === 'deuda'; })
+    .slice().sort(function (a, b) { return (a.fecha || '') < (b.fecha || '') ? -1 : 1; });
+  var bruto = 0, ivaT = 0, baseT = 0;
+  var rows = compras.map(function (pg) {
+    var total = pg.monto || 0;
+    var base = total / factor, iva = total - base;
+    bruto += total; ivaT += iva; baseT += base;
+    return '<tr><td>' + (pg.fecha || '').substring(0, 10) + '</td><td>' + (pg.factura ? fEscHTML(pg.factura) : '—') + '</td><td>' +
+      fEscHTML(pg.proveedor || '') + '</td><td>' + fEscHTML(d.rifProvPorNombre[pg.proveedor] || '—') + '</td><td>' + base.toFixed(2) + '</td><td>' +
+      iva.toFixed(2) + '</td><td>' + total.toFixed(2) + '</td></tr>';
+  }).join('');
+  document.getElementById('fiscalLibroCompras').innerHTML = rows
+    ? rows + '<tr style="font-weight:800;border-top:2px solid var(--border)"><td colspan="4">TOTALES DEL PERÍODO</td><td>' + baseT.toFixed(2) + '</td><td>' + ivaT.toFixed(2) + '</td><td>' + bruto.toFixed(2) + '</td></tr>'
+    : '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:20px">Sin compras registradas en este período</td></tr>';
+}
+
+function fiscalRenderDiario(d) {
+  var tD = 0, tH = 0;
+  var rows = d.movs.map(function (m) {
+    tD += m.debe; tH += m.haber;
+    return '<tr><td>' + m.asiento + '</td><td>' + (m.fecha || '').substring(0, 10) + '</td><td>' + fEscHTML(m.concepto) + '</td><td>' +
+      m.cuenta + '</td><td>' + (m.debe ? m.debe.toFixed(2) : '') + '</td><td>' + (m.haber ? m.haber.toFixed(2) : '') + '</td></tr>';
+  }).join('');
+  document.getElementById('fiscalLibroDiario').innerHTML = rows
+    ? rows + '<tr style="font-weight:800;border-top:2px solid var(--border)"><td colspan="4">SUMAS IGUALES</td><td>' + tD.toFixed(2) + '</td><td>' + tH.toFixed(2) + '</td></tr>'
+    : '<tr><td colspan="6" style="text-align:center;color:var(--text3);padding:20px">Sin movimientos en este período</td></tr>';
+}
+
+function fiscalRenderMayor(d) {
+  var porCuenta = {};
+  d.movs.forEach(function (m) {
+    if (!porCuenta[m.cuenta]) porCuenta[m.cuenta] = [];
+    porCuenta[m.cuenta].push(m);
+  });
+  var cuentas = FISCAL_PLAN_ORDEN.filter(function (c) { return porCuenta[c]; });
+  Object.keys(porCuenta).forEach(function (c) { if (cuentas.indexOf(c) === -1) cuentas.push(c); });
+  if (!cuentas.length) {
+    document.getElementById('fiscalLibroMayor').innerHTML = '<div class="card"><div style="text-align:center;color:var(--text3);padding:20px">Sin movimientos en este período</div></div>';
+    return;
+  }
+  document.getElementById('fiscalLibroMayor').innerHTML = cuentas.map(function (c) {
+    var saldo = 0;
+    var rows = porCuenta[c].map(function (m) {
+      saldo += m.debe - m.haber;
+      return '<tr><td>' + (m.fecha || '').substring(0, 10) + '</td><td>' + fEscHTML(m.concepto) + '</td><td>' +
+        (m.debe ? m.debe.toFixed(2) : '') + '</td><td>' + (m.haber ? m.haber.toFixed(2) : '') + '</td><td>' + saldo.toFixed(2) + '</td></tr>';
+    }).join('');
+    return '<div class="card fiscal-mayor-card">' +
+      '<div class="card-header"><span class="card-title">📚 ' + c + '</span><span class="mayor-saldo">Saldo: ' + fMoney(saldo) + '</span></div>' +
+      '<div class="table-wrap"><table><thead><tr><th>Fecha</th><th>Concepto</th><th>Debe</th><th>Haber</th><th>Saldo</th></tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+  }).join('');
+}
+
+function fiscalRenderBalance(d) {
+  var tot = {};
+  d.movs.forEach(function (m) {
+    if (!tot[m.cuenta]) tot[m.cuenta] = { debe: 0, haber: 0 };
+    tot[m.cuenta].debe += m.debe; tot[m.cuenta].haber += m.haber;
+  });
+  var tDebe = 0, tHaber = 0, tSD = 0, tSA = 0;
+  var rows = FISCAL_PLAN_ORDEN.filter(function (c) { return tot[c]; }).concat(
+    Object.keys(tot).filter(function (c) { return FISCAL_PLAN_ORDEN.indexOf(c) === -1; })
+  ).map(function (c) {
+    var r = tot[c];
+    var sd = Math.max(0, r.debe - r.haber), sa = Math.max(0, r.haber - r.debe);
+    tDebe += r.debe; tHaber += r.haber; tSD += sd; tSA += sa;
+    return '<tr><td>' + c + '</td><td>' + r.debe.toFixed(2) + '</td><td>' + r.haber.toFixed(2) + '</td><td>' +
+      (sd ? sd.toFixed(2) : '') + '</td><td>' + (sa ? sa.toFixed(2) : '') + '</td></tr>';
+  }).join('');
+  document.getElementById('fiscalBalance').innerHTML = rows
+    ? rows + '<tr style="font-weight:800;border-top:2px solid var(--border)"><td>SUMAS</td><td>' + tDebe.toFixed(2) + '</td><td>' + tHaber.toFixed(2) + '</td><td>' + tSD.toFixed(2) + '</td><td>' + tSA.toFixed(2) + '</td></tr>'
+    : '<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px">Sin movimientos en este período</td></tr>';
+  var cuadra = Math.abs(tDebe - tHaber) < 0.005;
+  document.getElementById('fiscalCuadre').innerHTML = cuadra
+    ? '✅ <span style="color:var(--success)">CUADRA — Debe $' + tDebe.toFixed(2) + ' = Haber $' + tHaber.toFixed(2) + '</span> · Balance generado automáticamente por Panadería Pro; tu contador lo revisa y firma.'
+    : '⚠️ Diferencia de $' + Math.abs(tDebe - tHaber).toFixed(2) + ' — revisa los movimientos del período.';
+}
+
+function fiscalStatCard(c1, c2, label, value, sub) {
+  return '<div class="stat-card" style="--c1:' + c1 + ';--c2:' + c2 + '">' +
+    '<div class="stat-label">' + label + '</div>' +
+    '<div class="stat-val">' + value + '</div>' +
+    (sub ? '<div class="stat-sub">' + sub + '</div>' : '') +
+    '</div>';
+}
+
+function renderFiscalPage() {
+  var input = document.getElementById('fiscal-periodo');
+  if (input && !input.value && !FISCAL_TODO) {
+    var now = new Date();
+    input.value = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  }
+  var cfg = fiscalCfg();
+  var ivaInput = document.getElementById('fiscal-iva');
+  var igtfInput = document.getElementById('fiscal-igtf');
+  if (ivaInput && document.activeElement !== ivaInput) ivaInput.value = cfg.iva;
+  if (igtfInput && document.activeElement !== igtfInput) igtfInput.value = cfg.igtf;
+
+  var d = fiscalCalc();
+  var t = d.t;
+
+  // Encabezado para impresión/PDF
+  var cfgNeg = DB.get('config') || {};
+  var negocio = cfgNeg.negocio || cfgNeg.nombre || (STATE.user && STATE.user.negocio) || 'Mi Negocio';
+  document.getElementById('fiscalHeadPrint').innerHTML =
+    '<div style="font-size:20px;font-weight:800">' + negocio + '</div>' +
+    '<div style="font-size:12px;color:#555">RIF: ' + (cfgNeg.rif || '—') + (cfgNeg.telefono ? ' · Tel: ' + cfgNeg.telefono : '') + '</div>' +
+    '<div style="font-size:13px;margin-top:4px"><strong>📊 Libro Fiscal — Período: ' + fiscalPeriodoLabel() + '</strong></div>' +
+    '<div style="font-size:11px;color:#777">Generado el ' + new Date().toLocaleDateString('es-VE') + ' por Panadería Pro</div>';
+
+  // Tarjetas resumen
+  document.getElementById('fiscalStats').innerHTML =
+    fiscalStatCard('var(--neon)',   'var(--accent)',  '💰 Ventas brutas',     fMoney(t.bruto), t.n + ' ventas') +
+    fiscalStatCard('var(--accent)', 'var(--neonb)',   '🧾 IVA (' + cfg.iva + '%)', fMoney(t.iva), 'desglosado de tus ventas') +
+    fiscalStatCard('var(--success)','var(--neon)',    '📉 Ventas netas',      fMoney(t.neto), 'base imponible IVA/ISLR') +
+    fiscalStatCard('var(--neonb)',  'var(--accent)',  '💵 Cobros en divisas', fMoney(t.divisas), 'efectivo $, Zelle, Binance…') +
+    fiscalStatCard('var(--danger)', 'var(--accent)',  '🏦 IGTF estimado',     fMoney(t.igtf), cfg.igtf + '% sobre divisas') +
+    fiscalStatCard('var(--accent)', 'var(--danger)',  '📦 Compras registradas', fMoney(t.compras), 'mercancía recibida') +
+    fiscalStatCard('var(--warning)','var(--accent)',  '🤝 Fiados por cobrar', fMoney(t.cxc), 'cuentas x cobrar') +
+    fiscalStatCard('var(--neonb)',  'var(--success)', '🏭 Deuda proveedores', fMoney(t.cxp), 'cuentas x pagar');
+
+  // Tabla por mes
+  var meses = Object.keys(d.porMes).sort();
+  var htmlMeses = meses.map(function (m) {
+    var r = d.porMes[m];
+    var y = m.substring(0, 4), mo = parseInt(m.substring(5, 7), 10);
+    var label = (!isNaN(mo) && FISCAL_MESES[mo - 1]) ? FISCAL_MESES[mo - 1] + ' ' + y : m;
+    return '<tr><td>' + label + '</td><td>' + fMoney(r.bruto) + '</td><td>' + fMoney(r.iva) + '</td><td>' +
+      fMoney(r.neto) + '</td><td>' + fMoney(r.divisas) + '</td><td>' + fMoney(r.igtf) + '</td><td>' + r.n + '</td></tr>';
+  }).join('');
+  document.getElementById('fiscalMeses').innerHTML = htmlMeses ||
+    '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:20px">Sin ventas en este período</td></tr>';
+
+  // Tabla por método de pago
+  var metodos = Object.keys(d.porMetodo).sort(function (a, b) { return d.porMetodo[b].total - d.porMetodo[a].total; });
+  var htmlMet = metodos.map(function (m) {
+    var r = d.porMetodo[m];
+    var marca = FISCAL_METODOS_DIVISAS.indexOf(m) >= 0 ? ' 💵' : '';
+    return '<tr><td>' + m + marca + '</td><td>' + r.n + '</td><td>' + fMoney(r.total) + '</td></tr>';
+  }).join('');
+  document.getElementById('fiscalMetodos').innerHTML = htmlMet ||
+    '<tr><td colspan="3" style="text-align:center;color:var(--text3);padding:20px">Sin ventas en este período</td></tr>';
+
+  // Notas para el contador
+  document.getElementById('fiscalNotaIva').innerHTML =
+    '<strong>🧾 IVA (' + cfg.iva + '%):</strong> tus precios ya incluyen IVA. Aquí está desglosado automáticamente: ' +
+    '<strong>Ventas netas ' + fMoney(t.neto) + ' + IVA ' + fMoney(t.iva) + ' = Total cobrado ' + fMoney(t.bruto) + '</strong>. ' +
+    'Ese IVA es el que se declara.';
+  document.getElementById('fiscalNotaIgtf').innerHTML =
+    '<strong>🏦 IGTF (' + cfg.igtf + '%):</strong> se genera al cobrar en divisas (efectivo $, Zelle, Binance…). Cobraste ' +
+    fMoney(t.divisas) + ' en divisas → IGTF estimado <strong>' + fMoney(t.igtf) + '</strong>. Se paga cuando depositas en el banco, ' +
+    'y tu contador lo descuenta como crédito fiscal contra el IVA.';
+  document.getElementById('fiscalNotaIslr').innerHTML =
+    '<strong>📉 ISLR:</strong> la base imponible estimada son las ventas netas (' + fMoney(t.neto) + '). ' +
+    'El ISLR exacto lo calcula tu contador según tu régimen y gastos deducibles (compras ' + fMoney(t.compras) + ', egresos de caja ' + fMoney(t.egresos) + ').';
+  document.getElementById('fiscalNotaExtra').innerHTML =
+    '<strong>📚 Libros incluidos:</strong> Libro de Ventas, Libro de Compras, Libro Diario (Art. 32 Código de Comercio), Libro Mayor analítico y Balance de Comprobación — todo generado automático en las pestañas de arriba, listo para imprimir o exportar. ' +
+    '<strong>🤝 Cuentas por cobrar ' + fMoney(t.cxc) + '</strong> (fiados) y <strong>cuentas por pagar ' + fMoney(t.cxp) + '</strong> (proveedores). ' +
+    'Devoluciones del período: ' + fMoney(t.devoluciones) + '. <br><strong>⚠️ Resumen orientativo</strong> generado por Panadería Pro — ' +
+    'la declaración formal la realiza tu contador con las retenciones y créditos fiscales que te correspondan.';
+
+  // Libros contables (pestañas)
+  var fd = fiscalMovimientos();
+  fiscalRenderLibroVentas(fd);
+  fiscalRenderLibroCompras(fd);
+  fiscalRenderDiario(fd);
+  fiscalRenderMayor(fd);
+  fiscalRenderBalance(fd);
+}
+
+function fiscalExportarCSV() {
+  var d = fiscalMovimientos();
+  var cfg = d.cfg, t = fiscalCalc().t;
+  var factor = 1 + cfg.iva / 100;
+  var lineas = [];
+  lineas.push('LIBRO FISCAL COMPLETO - ' + fiscalPeriodoLabel());
+  var cfgNeg = DB.get('config') || {};
+  lineas.push('Negocio:;' + fEscapeCSV(cfgNeg.negocio || '') + ';RIF:;' + fEscapeCSV(cfgNeg.rif || ''));
+  lineas.push('Generado:;' + new Date().toLocaleString('es-VE'));
+  lineas.push('');
+  lineas.push('RESUMEN;;;;;;');
+  lineas.push('Ventas brutas;IVA ' + cfg.iva + '%;Ventas netas;Divisas cobradas;IGTF ' + cfg.igtf + '% estimado;Compras;Fiados por cobrar;Deuda proveedores');
+  lineas.push(
+    t.bruto.toFixed(2) + ';' + t.iva.toFixed(2) + ';' + t.neto.toFixed(2) + ';' +
+    t.divisas.toFixed(2) + ';' + t.igtf.toFixed(2) + ';' + t.compras.toFixed(2) + ';' +
+    t.cxc.toFixed(2) + ';' + t.cxp.toFixed(2)
+  );
+  lineas.push('');
+  lineas.push('LIBRO DE VENTAS;;;;;;;');
+  lineas.push('Fecha;N Factura;Cliente;RIF/Cedula;Base imponible;IVA;IGTF;Total');
+  fiscalFiltrarPorPeriodo(DB.get('ventas') || []).forEach(function (v) {
+    var total = v.totalUSD || v.total || 0;
+    var esDiv = FISCAL_METODOS_DIVISAS.indexOf(v.metodo) >= 0;
+    lineas.push(
+      fEscapeCSV((v.fecha || '').substring(0, 10)) + ';' +
+      fEscapeCSV(d.numFac[v.id] || '') + ';' +
+      fEscapeCSV(v.cliente ? (d.nomCli[v.cliente] || '') : 'Consumidor final') + ';' +
+      fEscapeCSV(v.cliente ? (d.rifCli[v.cliente] || '') : '') + ';' +
+      (total / factor).toFixed(2) + ';' + (total - total / factor).toFixed(2) + ';' +
+      (esDiv ? (total * cfg.igtf / 100).toFixed(2) : '') + ';' + total.toFixed(2)
+    );
+  });
+  lineas.push('');
+  lineas.push('LIBRO DE COMPRAS;;;;;;');
+  lineas.push('Fecha;N Factura;Proveedor;RIF;Base imponible;IVA credito;Total');
+  fiscalFiltrarPorPeriodo(DB.get('pagos_proveedores') || []).forEach(function (pg) {
+    if (pg.tipo !== 'deuda') return;
+    var total = pg.monto || 0;
+    lineas.push(
+      fEscapeCSV((pg.fecha || '').substring(0, 10)) + ';' +
+      fEscapeCSV(pg.factura || '') + ';' + fEscapeCSV(pg.proveedor || '') + ';' +
+      fEscapeCSV(d.rifProvPorNombre[pg.proveedor] || '') + ';' +
+      (total / factor).toFixed(2) + ';' + (total - total / factor).toFixed(2) + ';' + total.toFixed(2)
+    );
+  });
+  lineas.push('');
+  lineas.push('LIBRO DIARIO (Art. 32 Codigo de Comercio);;;;;');
+  lineas.push('Asiento;Fecha;Concepto;Cuenta;Debe;Haber');
+  d.movs.forEach(function (m) {
+    lineas.push(m.asiento + ';' + fEscapeCSV((m.fecha || '').substring(0, 10)) + ';' +
+      fEscapeCSV(m.concepto) + ';' + m.cuenta + ';' + m.debe.toFixed(2) + ';' + m.haber.toFixed(2));
+  });
+  lineas.push('');
+  lineas.push('BALANCE DE COMPROBACION;;;;;');
+  lineas.push('Cuenta;Debe;Haber');
+  var tot = {};
+  d.movs.forEach(function (m) {
+    if (!tot[m.cuenta]) tot[m.cuenta] = { debe: 0, haber: 0 };
+    tot[m.cuenta].debe += m.debe; tot[m.cuenta].haber += m.haber;
+  });
+  FISCAL_PLAN_ORDEN.filter(function (c) { return tot[c]; }).forEach(function (c) {
+    lineas.push(c + ';' + tot[c].debe.toFixed(2) + ';' + tot[c].haber.toFixed(2));
+  });
+  var csv = '﻿' + lineas.join('\r\n');
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'LibroFiscal_' + (fiscalPeriodoActual() || 'todo') + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  showToast('⬇ Excel completo descargado: ventas, compras, diario y balance para tu contador', 'success');
+}
+
+function fiscalImprimir() {
+  showPage('fiscal');
+  setTimeout(function () { window.print(); }, 400);
+}
+
+
+// ── FACTURA FORMATO SENIAT (documento NO fiscal, parecido al modelo oficial) ──
+function saveFacturaSENIAT(){
+  var cfg=DB.get('config')||{}; if(!cfg.factura)cfg.factura={};
+  cfg.factura.negocio=gval('fac-razon')||cfg.factura.negocio;
+  cfg.factura.rif=gval('fac-rif2');
+  cfg.factura.direccion=gval('fac-dir');
+  cfg.factura.telefono=gval('fac-tel');
+  cfg.factura.serial=gval('fac-serial');
+  cfg.factura.ctrlPrefijo=(gval('fac-pref')||'AA').toUpperCase();
+  var d1=parseInt(gval('fac-desde')); if(d1>0 && !cfg.factura.ultimaFactura) cfg.factura.ultimaFactura=d1-1;
+  var d2=parseInt(gval('fac-ctrl-desde')); if(d2>0 && cfg.factura.ultimoControl==null) cfg.factura.ultimoControl=d2-1;
+  DB.set('config',cfg);
+  showToast('Datos de factura guardados','success');
+}
+function facCargarConfig(){
+  var cfg=DB.get('config')||{}; var fc=cfg.factura||{};
+  try{
+    if(gel('fac-razon'))gel('fac-razon').value=fc.negocio||'';
+    if(gel('fac-rif2'))gel('fac-rif2').value=fc.rif||'';
+    if(gel('fac-dir'))gel('fac-dir').value=fc.direccion||'';
+    if(gel('fac-tel'))gel('fac-tel').value=fc.telefono||'';
+    if(gel('fac-serial'))gel('fac-serial').value=fc.serial||'';
+    if(gel('fac-pref'))gel('fac-pref').value=fc.ctrlPrefijo||'AA';
+  }catch(e){}
+}
+function facAsignarNumeros(v){
+  var cfg=DB.get('config')||{}; if(!cfg.factura)cfg.factura={};
+  if(v.numFactura) return;
+  cfg.factura.ultimaFactura=(cfg.factura.ultimaFactura||0)+1;
+  v.numFactura=String(cfg.factura.ultimaFactura).padStart(8,'0');
+  var pref=(cfg.factura.ctrlPrefijo||'AA').toUpperCase().replace(/[^A-Z]/g,'').slice(0,2)||'AA';
+  cfg.factura.ultimoControl=(cfg.factura.ultimoControl||0)+1;
+  v.numControl=pref+String(cfg.factura.ultimoControl).padStart(10,'0');
+  DB.set('config',cfg);
+  var ventas=DB.get('ventas')||[]; var x=ventas.find(function(y){return y.id===v.id;});
+  if(x){x.numFactura=v.numFactura;x.numControl=v.numControl;DB.set('ventas',ventas);}
+}
+function facturaAbrir(ventaId){
+  if(!ventaId){showToast('Abre primero el recibo de la venta','warn');return;}
+  var v=(DB.get('ventas')||[]).find(function(x){return x.id===ventaId;});
+  if(!v) return;
+  facAsignarNumeros(v);
+  var wrap=document.createElement('div');
+  wrap.id='modalFacWrap'; wrap.className='modal-overlay'; wrap.style.display='flex';
+  wrap.innerHTML='<div class="modal" style="max-width:400px">'
+   +'<div class="modal-header"><span class="modal-title">🧾 Datos del comprador</span><button class="btn-close-modal" onclick="document.getElementById(\'modalFacWrap\').remove()">✕</button></div>'
+   +'<div class="modal-body">'
+   +'<div class="form-group"><label class="form-label">Nombre o razón social</label><input type="text" id="fac-cli-nombre" class="form-input" value="'+((v.facClienteNombre||'').replace(/"/g,'&quot;'))+'" placeholder="CLIENTE VARIOS"></div>'
+   +'<div class="form-group"><label class="form-label">RIF o Cédula</label><input type="text" id="fac-cli-rif" class="form-input" value="'+((v.facClienteRif||'').replace(/"/g,'&quot;'))+'" placeholder="V-12345678"></div>'
+   +'<div style="font-size:11px;color:var(--text2)">Deja vacío para "CLIENTE VARIOS". Estos datos salen impresos en la factura junto al Nro. de control.</div>'
+   +'</div>'
+   +'<div class="modal-footer"><button class="btn btn-ghost" onclick="document.getElementById(\'modalFacWrap\').remove()">Cancelar</button>'
+   +'<button class="btn btn-primary" onclick="facturaEmitir('+v.id+')">✅ Generar factura</button></div></div>';
+  document.body.appendChild(wrap);
+}
+function facturaEmitir(ventaId){
+  var ventas=DB.get('ventas')||[];
+  var v=ventas.find(function(x){return x.id===ventaId;});
+  if(!v) return;
+  v.facClienteNombre=(gval('fac-cli-nombre')||'').trim()||'CLIENTE VARIOS';
+  v.facClienteRif=(gval('fac-cli-rif')||'').trim();
+  facAsignarNumeros(v);
+  DB.set('ventas',ventas);
+  var w=document.getElementById('modalFacWrap'); if(w)w.remove();
+  facturaVer(v);
+}
+function facturaVer(v){
+  var cfg=DB.get('config')||{}; var fc=cfg.factura||{};
+  var cfgIva=16, cfgIgtf=3;
+  try{var fcCfg=fiscalCfg(); cfgIva=fcCfg.iva; cfgIgtf=fcCfg.igtf;}catch(e){}
+  var factor=1+cfgIva/100;
+  var total=(v.totalUSD||v.total||0);
+  var base=total/factor, iva=total-base;
+  var esDiv=(typeof FISCAL_METODOS_DIVISAS!=='undefined')&&FISCAL_METODOS_DIVISAS.indexOf(v.metodo)>=0;
+  var igtf=esDiv?total*cfgIgtf/100:0;
+  var granTotal=total+igtf;
+  var _dq={}; (v.itemsDevueltos||[]).forEach(function(d){_dq[d.id]=(_dq[d.id]||0)+d.qty;});
+  var rows=(v.items||[]).map(function(it,i){
+    var qd=_dq[it.id]||0, qm=it.qty-qd; if(qm<=0)return '';
+    var sm=it.precio*qm;
+    return '<tr><td style="text-align:center">'+(i+1)+'</td><td>'+it.nombre+(qd>0?' <em>(-'+qd+' dev.)</em>':'')+'</td>'
+      +'<td style="text-align:center">'+qm+'</td><td style="text-align:right">'+(it.precio||0).toFixed(2)+'</td>'
+      +'<td style="text-align:right">'+sm.toFixed(2)+'</td></tr>';
+  }).join('')||'<tr><td colspan="5" style="text-align:center">(todos los productos fueron devueltos)</td></tr>';
+  var fecha=new Date(v.ts||v.fecha).toLocaleString('es-VE');
+  var html='<!DOCTYPE html><html><head><meta charset="utf-8"><title>Factura '+v.numFactura+'</title>'
+   +'<style>body{font-family:Arial,Helvetica,sans-serif;color:#000;margin:0;padding:24px}'
+   +'.doc{max-width:720px;margin:0 auto;border:2px solid #000;padding:22px}'
+   +'table{width:100%;border-collapse:collapse;font-size:12px}'
+   +'th,td{border:1px solid #000;padding:4px 6px}'
+   +'th{background:#eee}.tot td{border:none;padding:2px 6px}'
+   +'.c{text-align:center}.b{font-weight:700}.box{border:1px solid #000;padding:6px 8px;margin:8px 0;font-size:12px}'
+   +'@media print{body{padding:0}.no-print{display:none}}'
+   +'</style></head><body>'
+   +'<div class="doc">'
+   +(fc.logo?'<div class="c"><img src="'+fc.logo+'" style="max-width:90px;max-height:60px"></div>':'')
+   +'<div class="c b" style="font-size:16px;letter-spacing:1px">'+String(fc.negocio||'MI NEGOCIO').toUpperCase()+'</div>'
+   +'<div class="c" style="font-size:12px">RIF: '+(fc.rif||'—')+'</div>'
+   +'<div class="c" style="font-size:11px">'+String(fc.direccion||'')+(fc.telefono?' · Tlf: '+fc.telefono:'')+'</div>'
+   +'<div style="display:flex;justify-content:space-between;margin-top:10px;font-size:12px">'
+   +'<div><div class="b" style="font-size:15px">FACTURA</div><div>Nro: '+(v.numFactura||'—')+'</div><div>Fecha: '+fecha+'</div></div>'
+   +'<div style="text-align:right"><div>Nro. de Control: <span class="b">'+(v.numControl||'—')+'</span></div><div>Serial: '+(fc.serial||'—')+'</div></div>'
+   +'</div>'
+   +'<div class="box"><span class="b">Cliente:</span> '+String(v.facClienteNombre||'CLIENTE VARIOS').replace(/</g,'&lt;')+' &nbsp;·&nbsp; <span class="b">RIF/C.I.:</span> '+String(v.facClienteRif||'N/D').replace(/</g,'&lt;')+'</div>'
+   +'<table><thead><tr><th style="width:26px">#</th><th>Descripción</th><th style="width:50px">Cant.</th><th style="width:70px">P. Unit $</th><th style="width:80px">Total $</th></tr></thead><tbody>'+rows+'</tbody></table>'
+   +'<table class="tot" style="margin-top:8px"><tbody>'
+   +'<tr><td class="b" style="text-align:right">Base Imponible:</td><td style="text-align:right;width:110px">$'+base.toFixed(2)+'</td></tr>'
+   +'<tr><td class="b" style="text-align:right">IVA ('+cfgIva+'%):</td><td style="text-align:right">$'+iva.toFixed(2)+'</td></tr>'
+   +(igtf>0?'<tr><td class="b" style="text-align:right">IGTF ('+cfgIgtf+'%):</td><td style="text-align:right">$'+igtf.toFixed(2)+'</td></tr>':'')
+   +'<tr><td class="b" style="text-align:right;font-size:14px">TOTAL A PAGAR:</td><td class="b" style="text-align:right;font-size:14px">$'+granTotal.toFixed(2)+'</td></tr>'
+   +'</tbody></table>'
+   +(v.itemsDevueltos&&v.itemsDevueltos.length?'<div style="font-size:11px;margin-top:4px">Devuelto: '+v.itemsDevueltos.map(function(d){return d.qty+'x '+d.nombre;}).join(' · ')+'</div>':'')
+   +'<div class="box" style="margin-top:10px;font-size:10px">⚖️ <b>Documento de venta emitido por sistema no designado.</b> No constituye comprobante fiscal ni da derecho a crédito fiscal ante el SENIAT.</div>'
+   +'<div class="c" style="font-size:11px;margin-top:6px">'+(fc.mensajePie||'Gracias por su compra!')+'</div>'
+   +'</div>'
+   +'<div class="no-print c" style="margin-top:14px"><button onclick="window.print()" style="padding:10px 22px;font-size:14px;font-weight:700;cursor:pointer">🖨 Imprimir / PDF</button></div>'
+   +'</body></html>';
+  var win=window.open('','_blank');
+  if(win){ win.document.write(html); win.document.close(); }
+  else showToast('Permite las ventanas emergentes para ver la factura','warn');
+}
+
 </script>
 </body>
 </html>
